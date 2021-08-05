@@ -1,0 +1,5 @@
+﻿project ("lib" CXX)
+file(GLOB_RECURSE SRC_FILES "src/*.cpp")
+add_library("lib" ${SRC_FILES})
+target_include_directories("lib" PUBLIC "${PROJECT_SOURCE_DIR}/include")
+set("${PROJECT_NAME}_INCLUDE_DIRS" "${PROJECT_SOURCE_DIR}/include")
