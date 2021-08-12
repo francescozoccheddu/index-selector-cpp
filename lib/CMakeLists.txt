@@ -4,8 +4,7 @@ project ("lib" CXX)
 # Source files
 file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 add_library("lib" ${SRC_FILES})
-target_include_directories("lib" PUBLIC "${PROJECT_SOURCE_DIR}/src/include")
-set("${PROJECT_NAME}_INCLUDE_DIRS" "${PROJECT_SOURCE_DIR}/include")
+target_include_directories("lib" PRIVATE "${PROJECT_SOURCE_DIR}/src/include")
 target_include_directories("lib" PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
 # CPLEX

@@ -8,21 +8,18 @@
 namespace IndexSelector
 {
 
-	class Problem
+	struct Problem final
 	{
 
-	public:
-
-		const ImmutableArray<Real> unindexedQueryCosts;
-		const Real maxSize;
-		const ImmutableArray<Index> indices;
-
-		Problem (Real _maxSize, ImmutableArray<Real> _unindexedQueryCosts, ImmutableArray<Index> _indices);
+		ImmutableArray<Real> unindexedQueryCosts;
+		Real maxSize;
+		ImmutableArray<Index> indices;
 
 		int nQueries () const;
+		void validate () const;
 
 	};
 
 }
-	
+
 #endif

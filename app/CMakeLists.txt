@@ -7,5 +7,4 @@ add_executable("app" ${SRC_FILES})
 target_include_directories("lib" PRIVATE "${PROJECT_SOURCE_DIR}/src/include")
 
 # Lib
-target_include_directories("app" PRIVATE "include" ${lib_INCLUDE_DIRS})
 target_link_libraries("app" "lib")

@@ -7,18 +7,15 @@
 namespace IndexSelector
 {
 
-	class Index
+	struct Index final
 	{
 
-	public:
-
-		const ImmutableArray<Real> queryCosts;
-		const Real size;
-		const Real fixedCost;
-
-		Index (Real _size, Real _fixedCost, ImmutableArray<Real> _queryCosts);
+		Real size;
+		Real fixedCost;
+		ImmutableArray<Real> queryCosts;
 
 		int nQueries () const;
+		void validate () const;
 
 	};
 

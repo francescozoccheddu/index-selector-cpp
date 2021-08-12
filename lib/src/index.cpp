@@ -5,28 +5,28 @@
 namespace IndexSelector
 {
 
-	Index::Index (Real _size, Real _fixedCost, ImmutableArray<Real> _queryCosts) : size{ _size }, fixedCost{ _fixedCost }, queryCosts{ _queryCosts }
+	void Index::validate () const
 	{
-		if (_size < 0)
+		if (size < 0)
 		{
-			throw std::invalid_argument{ "Negative size" };
+			throw std::out_of_range{ "Negative size" };
 		}
-		if (_fixedCost < 0)
+		if (fixedCost < 0)
 		{
-			throw std::invalid_argument{ "Negative fixed cost" };
+			throw std::out_of_range{ "Negative fixed cost" };
 		}
-		for (Real qc : _queryCosts)
+		for (Real qc : queryCosts)
 		{
 			if (qc < 0)
 			{
-				throw std::invalid_argument{ "Negative query cost" };
+				throw std::out_of_range{ "Negative query cost" };
 			}
 		}
 	}
 
 	int Index::nQueries () const
 	{
-		return queryCosts.size;
+		return queryCosts.size ();
 	}
 
 }

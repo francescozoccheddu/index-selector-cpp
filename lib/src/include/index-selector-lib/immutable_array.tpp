@@ -13,25 +13,25 @@ namespace IndexSelector
 
 #pragma region Private
 
-	template<typename Type>
-	template<typename T>
-	requires std::convertible_to<T, Type>
-		 Type* ImmutableArray<Type>::copy (const T* _pData, int _nData)
+	template<typename TValue>
+	template<typename TConvertible>
+	requires std::convertible_to<TConvertible, TValue>
+		 TValue* ImmutableArray<TValue>::copy (const TConvertible* _pData, int _nData)
 	{
 		if (_nData < 0)
 		{
 			throw std::invalid_argument{ "Negative size" };
 		}
-		Type* pCopy = new Type[_nData];
+		TValue* pCopy = new TValue[_nData];
 		while (_nData-- > 0)
 		{
-			pCopy[_nData] = static_cast<const Type>(_pData[_nData]);
+			pCopy[_nData] = static_cast<const TValue>(_pData[_nData]);
 		}
 		return pCopy;
 	}
 
-	template<typename Type>
-	 ImmutableArray<Type>::ImmutableArray (Type* _pData, int _nData) : m_data{ _pData }, size{ _nData }
+	template<typename TValue>
+	 ImmutableArray<TValue>::ImmutableArray (TValue* _pData, int _nData) : m_data{ _pData }, m_nData{ _nData }
 	{
 		if (_nData < 0)
 		{
@@ -46,82 +46,76 @@ namespace IndexSelector
 
 #pragma region Constructors
 
-	template<typename Type>
-	template<typename T>
-	requires std::convertible_to<T, Type>
-		 ImmutableArray<Type>::ImmutableArray (const std::vector<T>& _data) : ImmutableArray{ _data.data (), static_cast<int>(_data.size ()) }
+	template<typename TValue>
+	template<typename TConvertible>
+	requires std::convertible_to<TConvertible, TValue>
+		 ImmutableArray<TValue>::ImmutableArray (std::initializer_list<TConvertible> _data) : ImmutableArray{ _data.begin (), static_cast<int>(_data.size ()) }
 	{}
 
-	template<typename Type>
-	template<typename T, size_t N>
-	requires std::convertible_to<T, Type>
-		 ImmutableArray<Type>::ImmutableArray (const std::array<T, N>& _data) : ImmutableArray{ _data.data (), static_cast<int>(N) }
-	{}
-
-	template<typename Type>
-	template<typename T>
-	requires std::convertible_to<T, Type>
-		 ImmutableArray<Type>::ImmutableArray (std::initializer_list<T> _data) : ImmutableArray{ _data.begin (), static_cast<int>(_data.size ()) }
-	{}
-
-	template<typename Type>
-	template<typename T>
-	requires std::convertible_to<T, Type>
-		 ImmutableArray<Type>::ImmutableArray (const T* _pData, int _nData) : ImmutableArray{ ImmutableArray::copy (_pData, _nData), _nData }
+	template<typename TValue>
+	template<typename TConvertible>
+	requires std::convertible_to<TConvertible, TValue>
+		 ImmutableArray<TValue>::ImmutableArray (const TConvertible* _pData, int _nData) : ImmutableArray{ ImmutableArray::copy (_pData, _nData), _nData }
 	{}
 
 #pragma endregion
 
 #pragma region Methods
 
-	template<typename Type>
-	 ImmutableArray<Type> ImmutableArray<Type>::from_immutable_data (Type* _pData, int _nData)
+	template<typename TValue>
+	 ImmutableArray<TValue> ImmutableArray<TValue>::from_immutable_data (TValue* _pData, int _nData)
 	{
 		return ImmutableArray{ _pData, _nData };
 	}
 
-	template<typename Type>
-	 const Type* ImmutableArray<Type>::data () const
+	template<typename TValue>
+	 const TValue* ImmutableArray<TValue>::data () const
 	{
 		return m_data.get ();
 	}
 
-	template<typename Type>
-	 const Type* ImmutableArray<Type>::operator* () const
+	template<typename TValue>
+	 const TValue* ImmutableArray<TValue>::operator* () const
 	{
 		return m_data.get ();
 	}
 
-	template<typename Type>
-	 Type ImmutableArray<Type>::operator[](int _index) const
+	template<typename TValue>
+	int ImmutableArray<TValue>::size () const
 	{
-		if (_index < 0 or _index >= size)
+		return m_nData;
+	}
+
+	template<typename TValue>
+	 TValue ImmutableArray<TValue>::operator[](int _index) const
+	{
+		if (_index < 0 or _index >= m_nData)
 		{
 			throw std::invalid_argument{ "Index out of range" };
 		}
 		return m_data.get ()[_index];
 	}
 
-	template<typename Type>
-	 ImmutableArray<Type>::Iterator ImmutableArray<Type>::cbegin () const
+	template<typename TValue>
+	 ImmutableArray<TValue>::Iterator ImmutableArray<TValue>::cbegin () const
 	{
 		return Iterator{ m_data.get () };
 	}
 
-	template<typename Type>
-	 ImmutableArray<Type>::Iterator ImmutableArray<Type>::cend ()   const
+	template<typename TValue>
+	 ImmutableArray<TValue>::Iterator ImmutableArray<TValue>::cend ()   const
 	{
-		return Iterator{ m_data.get () + size };
+		return Iterator{ m_data.get () + m_nData };
 	}
 
-	template<typename Type>
-	 ImmutableArray<Type>::Iterator ImmutableArray<Type>::begin () const
+	template<typename TValue>
+	 ImmutableArray<TValue>::Iterator ImmutableArray<TValue>::begin () const
 	{
 		return cbegin ();
 	}
 
-	template<typename Type>
-	 ImmutableArray<Type>::Iterator ImmutableArray<Type>::end ()   const
+	template<typename TValue>
+	 ImmutableArray<TValue>::Iterator ImmutableArray<TValue>::end ()   const
 	{
 		return cend ();
 	}
@@ -130,30 +124,30 @@ namespace IndexSelector
 
 #pragma region Iterator
 
-	template<typename Type>
-	 ImmutableArray<Type>::Iterator::Iterator (const Type* _p) : m_p{ _p }
+	template<typename TValue>
+	 ImmutableArray<TValue>::Iterator::Iterator (const TValue* _p) : m_p{ _p }
 	{}
 
-	template<typename Type>
-	 const Type& ImmutableArray<Type>::Iterator::operator*() const
+	template<typename TValue>
+	 const TValue& ImmutableArray<TValue>::Iterator::operator*() const
 	{
 		return *m_p;
 	}
-	template<typename Type>
-	 const Type* ImmutableArray<Type>::Iterator::operator->()
+	template<typename TValue>
+	 const TValue* ImmutableArray<TValue>::Iterator::operator->()
 	{
 		return m_p;
 	}
 
-	template<typename Type>
-	 ImmutableArray<Type>::Iterator& ImmutableArray<Type>::Iterator::operator++()
+	template<typename TValue>
+	 ImmutableArray<TValue>::Iterator& ImmutableArray<TValue>::Iterator::operator++()
 	{
 		m_p++;
 		return *this;
 	}
 
-	template<typename Type>
-	 ImmutableArray<Type>::Iterator ImmutableArray<Type>::Iterator::operator++(int)
+	template<typename TValue>
+	 ImmutableArray<TValue>::Iterator ImmutableArray<TValue>::Iterator::operator++(int)
 	{
 		ImmutableArray::Iterator tmp = *this;
 		++(*this);

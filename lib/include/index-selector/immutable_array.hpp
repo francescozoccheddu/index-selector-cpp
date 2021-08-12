@@ -10,19 +10,20 @@
 namespace IndexSelector
 {
 
-	template<typename Type>
+	template<typename TValue>
 	class ImmutableArray final
 	{
 
 	private:
 
-		const std::shared_ptr<Type> m_data;
+		std::shared_ptr<TValue> m_data{};
+		int m_nData{};
 
-		template<typename T>
-		requires std::convertible_to<T, Type>
-			static  Type* copy (const T* _pData, int _nData);
+		template<typename TConvertible>
+		requires std::convertible_to<TConvertible, TValue>
+			static  TValue* copy (const TConvertible* _pData, int _nData);
 
-		ImmutableArray (Type* _pData, int _nData);
+		ImmutableArray (TValue* _pData, int _nData);
 
 	public:
 
@@ -33,54 +34,51 @@ namespace IndexSelector
 
 			friend class ImmutableArray;
 
-			const Type* m_p;
+			const TValue* m_p;
 
-			Iterator (const Type* _p);
+			Iterator (const TValue* _p);
 
 		public:
 
 
 			using iterator_category = std::contiguous_iterator_tag;
 			using difference_type = std::ptrdiff_t;
-			using value_type = Type;
-			using pointer = Type*;
-			using reference = Type&;
+			using value_type = TValue;
+			using pointer = TValue*;
+			using reference = TValue&;
 
-			const Type& operator*() const;
-			const Type* operator->();
+			const TValue& operator*() const;
+			const TValue* operator->();
 			Iterator& operator++();
 			Iterator operator++(int);
 			friend bool operator== (const Iterator& _a, const Iterator& _b) = default;
 
 		};
 
-		static ImmutableArray<Type> from_immutable_data (Type* _pData, int _nData);
+		static ImmutableArray<TValue> from_immutable_data (TValue* _pData, int _nData);
 
-		template<typename T>
-		requires std::convertible_to<T, Type>
-			ImmutableArray (const std::vector<T>& _data);
+		ImmutableArray () = default;
 
-		template<typename T, size_t N>
-		requires std::convertible_to<T, Type>
-			ImmutableArray (const std::array<T, N>& _data);
+		template<typename TConvertible>
+		requires std::convertible_to<TConvertible, TValue>
+			ImmutableArray (std::initializer_list<TConvertible> _data);
 
-		template<typename T>
-		requires std::convertible_to<T, Type>
-			ImmutableArray (std::initializer_list<T> _data);
-
-		template<typename T>
-		requires std::convertible_to<T, Type>
-			ImmutableArray (const T* _pData, int _nData);
+		template<typename TConvertible>
+		requires std::convertible_to<TConvertible, TValue>
+			ImmutableArray (const TConvertible* _pData, int _nData);
 
 		ImmutableArray (const ImmutableArray& _copy) = default;
 		ImmutableArray (ImmutableArray&& _moved) = default;
 
-		Type operator[](int _index) const;
+		TValue operator[](int _index) const;
 
-		const int size;
+		int size () const;
 
-		const Type* data () const;
-		const Type* operator*() const;
+		const TValue* data () const;
+		const TValue* operator*() const;
+
+		ImmutableArray& operator=(const ImmutableArray& _copy) = default;
+		ImmutableArray& operator=(ImmutableArray&& _moved) = default;
 
 		Iterator cbegin () const;
 		Iterator cend ()   const;
@@ -91,5 +89,5 @@ namespace IndexSelector
 
 }
 
-#include <index-selector-lib/immutable_array.tpp>
+#include "../../src/include/index-selector-lib/immutable_array.tpp"
 #endif

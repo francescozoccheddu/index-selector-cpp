@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <index-selector/immutable_array.hpp>
 #include <index-selector/index.hpp>
+#include <index-selector/solve.hpp>
 #include <vector>
 
 using namespace std;
@@ -12,6 +13,6 @@ int main ()
 	{
 		cout << q;
 	}
-	IndexSelector::Index i{ 0,0,c };
+	IndexSelector::Index i{ .size = 78, .fixedCost = 6, .queryCosts = c };
 	return 0;
 }
