@@ -1,10 +1,12 @@
-﻿project ("lib" CXX)
+﻿cmake_minimum_required (VERSION 3.8)
+project ("lib" CXX)
 
 # Source files
-file(GLOB_RECURSE SRC_FILES "src/*.cpp")
+file(GLOB_RECURSE SRC_FILES "${PROJECT_SOURCE_DIR}/src/*.cpp")
 add_library("lib" ${SRC_FILES})
-target_include_directories("lib" PUBLIC "${PROJECT_SOURCE_DIR}/include")
+target_include_directories("lib" PUBLIC "${PROJECT_SOURCE_DIR}/src/include")
 set("${PROJECT_NAME}_INCLUDE_DIRS" "${PROJECT_SOURCE_DIR}/include")
+target_include_directories("lib" PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
 # CPLEX
 include("${PROJECT_SOURCE_DIR}/cplex.cmake")
@@ -24,6 +26,6 @@ if (NOT DEFINED "CPLEX_LIBS")
 	endif()
 	set("CPLEX_LIBS" "${CPLEX_HOME}/concert/lib/${CPLEX_ARCH}/${CPLEX_CONF}/concert.${CPLEX_LIB_EXT}" "${CPLEX_HOME}/cplex/lib/${CPLEX_ARCH}/${CPLEX_CONF}/ilocplex.${CPLEX_LIB_EXT}" "${CPLEX_HOME}/cplex/lib/${CPLEX_ARCH}/${CPLEX_CONF}/cplex${CPLEX_VERSION}.${CPLEX_LIB_EXT}")
 endif()
-target_include_directories("lib" PUBLIC "${CPLEX_INCLUDE_DIRS}")
+target_include_directories("lib" PRIVATE "${CPLEX_INCLUDE_DIRS}")
 target_link_libraries("lib" "${CPLEX_LIBS}")
 add_compile_definitions("IL_STD")
