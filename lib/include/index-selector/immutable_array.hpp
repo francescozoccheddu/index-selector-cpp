@@ -17,11 +17,10 @@ namespace IndexSelector
 	private:
 
 		const std::shared_ptr<Type> m_data;
-		const int m_nData;
 
 		template<typename T>
 		requires std::convertible_to<T, Type>
-			static Type* copy (const T* _pData, int _nData);
+			static  Type* copy (const T* _pData, int _nData);
 
 		ImmutableArray (Type* _pData, int _nData);
 
@@ -36,8 +35,7 @@ namespace IndexSelector
 
 			const Type* m_p;
 
-			Iterator (const Type* _p) : m_p{ _p }
-			{}
+			Iterator (const Type* _p);
 
 		public:
 
@@ -79,7 +77,7 @@ namespace IndexSelector
 
 		Type operator[](int _index) const;
 
-		int size () const;
+		const int size;
 
 		const Type* data () const;
 		const Type* operator*() const;
