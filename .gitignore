@@ -2,3 +2,4 @@
 /app/out
 /lib/out
 /.vs
+/lib/cplex.cmake

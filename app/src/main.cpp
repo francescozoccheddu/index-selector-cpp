@@ -1,5 +1,5 @@
 ﻿#include <iostream>
-#include <index-selector-cpp/test.hpp>
+#include <index-selector/test.hpp>
 
 using namespace std;
 

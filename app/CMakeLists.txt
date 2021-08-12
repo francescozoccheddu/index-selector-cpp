@@ -2,4 +2,5 @@
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 add_executable("app" ${SRC_FILES})
 target_include_directories("app" PUBLIC "include" ${lib_INCLUDE_DIRS})
+target_include_directories("lib" PUBLIC "${PROJECT_SOURCE_DIR}/include")
 target_link_libraries("app" "lib")
