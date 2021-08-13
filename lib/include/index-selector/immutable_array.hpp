@@ -6,6 +6,7 @@
 #include <memory>
 #include <initializer_list>
 #include <iterator>
+#include <cstddef>
 
 namespace IndexSelector
 {
@@ -14,16 +15,14 @@ namespace IndexSelector
 	class ImmutableArray final
 	{
 
-	private:
-
 		std::shared_ptr<TValue> m_data{};
-		int m_nData{};
+		size_t m_nData{};
 
 		template<typename TConvertible>
 		requires std::convertible_to<TConvertible, TValue>
-			static  TValue* copy (const TConvertible* _pData, int _nData);
+			static  TValue* copy (const TConvertible* _pData, size_t _nData);
 
-		ImmutableArray (TValue* _pData, int _nData);
+		ImmutableArray (TValue* _pData, size_t _nData);
 
 	public:
 
@@ -40,7 +39,6 @@ namespace IndexSelector
 
 		public:
 
-
 			using iterator_category = std::contiguous_iterator_tag;
 			using difference_type = std::ptrdiff_t;
 			using value_type = TValue;
@@ -55,7 +53,7 @@ namespace IndexSelector
 
 		};
 
-		static ImmutableArray<TValue> from_immutable_data (TValue* _pData, int _nData);
+		static ImmutableArray<TValue> from_immutable_data (TValue* _pData, size_t _nData);
 
 		ImmutableArray () = default;
 
@@ -65,20 +63,14 @@ namespace IndexSelector
 
 		template<typename TConvertible>
 		requires std::convertible_to<TConvertible, TValue>
-			ImmutableArray (const TConvertible* _pData, int _nData);
+			ImmutableArray (const TConvertible* _pData, size_t _nData);
 
-		ImmutableArray (const ImmutableArray& _copy) = default;
-		ImmutableArray (ImmutableArray&& _moved) = default;
+		TValue operator[](size_t _index) const;
 
-		TValue operator[](int _index) const;
-
-		int size () const;
+		size_t size () const;
 
 		const TValue* data () const;
 		const TValue* operator*() const;
-
-		ImmutableArray& operator=(const ImmutableArray& _copy) = default;
-		ImmutableArray& operator=(ImmutableArray&& _moved) = default;
 
 		Iterator cbegin () const;
 		Iterator cend ()   const;

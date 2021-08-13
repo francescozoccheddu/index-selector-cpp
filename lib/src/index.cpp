@@ -24,7 +24,7 @@ namespace IndexSelector
 		}
 	}
 
-	int Index::nQueries () const
+	size_t Index::nQueries () const
 	{
 		return queryCosts.size ();
 	}

@@ -16,7 +16,7 @@ namespace IndexSelector
 	template<typename TValue>
 	template<typename TConvertible>
 	requires std::convertible_to<TConvertible, TValue>
-		 TValue* ImmutableArray<TValue>::copy (const TConvertible* _pData, int _nData)
+		 TValue* ImmutableArray<TValue>::copy (const TConvertible* _pData, size_t _nData)
 	{
 		if (_nData < 0)
 		{
@@ -31,7 +31,7 @@ namespace IndexSelector
 	}
 
 	template<typename TValue>
-	 ImmutableArray<TValue>::ImmutableArray (TValue* _pData, int _nData) : m_data{ _pData }, m_nData{ _nData }
+	 ImmutableArray<TValue>::ImmutableArray (TValue* _pData, size_t _nData) : m_data{ _pData }, m_nData{ _nData }
 	{
 		if (_nData < 0)
 		{
@@ -49,13 +49,13 @@ namespace IndexSelector
 	template<typename TValue>
 	template<typename TConvertible>
 	requires std::convertible_to<TConvertible, TValue>
-		 ImmutableArray<TValue>::ImmutableArray (std::initializer_list<TConvertible> _data) : ImmutableArray{ _data.begin (), static_cast<int>(_data.size ()) }
+		 ImmutableArray<TValue>::ImmutableArray (std::initializer_list<TConvertible> _data) : ImmutableArray{ _data.begin (), _data.size () }
 	{}
 
 	template<typename TValue>
 	template<typename TConvertible>
 	requires std::convertible_to<TConvertible, TValue>
-		 ImmutableArray<TValue>::ImmutableArray (const TConvertible* _pData, int _nData) : ImmutableArray{ ImmutableArray::copy (_pData, _nData), _nData }
+		 ImmutableArray<TValue>::ImmutableArray (const TConvertible* _pData, size_t _nData) : ImmutableArray{ ImmutableArray::copy (_pData, _nData), _nData }
 	{}
 
 #pragma endregion
@@ -63,7 +63,7 @@ namespace IndexSelector
 #pragma region Methods
 
 	template<typename TValue>
-	 ImmutableArray<TValue> ImmutableArray<TValue>::from_immutable_data (TValue* _pData, int _nData)
+	 ImmutableArray<TValue> ImmutableArray<TValue>::from_immutable_data (TValue* _pData, size_t _nData)
 	{
 		return ImmutableArray{ _pData, _nData };
 	}
@@ -81,13 +81,13 @@ namespace IndexSelector
 	}
 
 	template<typename TValue>
-	int ImmutableArray<TValue>::size () const
+	size_t ImmutableArray<TValue>::size () const
 	{
 		return m_nData;
 	}
 
 	template<typename TValue>
-	 TValue ImmutableArray<TValue>::operator[](int _index) const
+	 TValue ImmutableArray<TValue>::operator[](size_t _index) const
 	{
 		if (_index < 0 or _index >= m_nData)
 		{

@@ -25,16 +25,21 @@ namespace IndexSelector
 		for (const Index& i : indices)
 		{
 			i.validate ();
-			if (i.size != unindexedQueryCosts.size())
+			if (i.nQueries() != unindexedQueryCosts.size())
 			{
 				throw std::invalid_argument{ "Mismatched number of queries between indices" };
 			}
 		}
 	}
 
-	int Problem::nQueries () const
+	size_t Problem::nQueries () const
 	{
 		return unindexedQueryCosts.size();
+	}
+
+	size_t Problem::nIndices () const
+	{
+		return indices.size ();
 	}
 
 }

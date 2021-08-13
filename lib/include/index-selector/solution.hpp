@@ -15,30 +15,26 @@ namespace IndexSelector
 		struct Statistics final
 		{
 
-			int nNodes;
-			int nVariables;
-			int nOriginalConstraints;
-			int nC1Constraints;
-			int nC2Constraints;
-			double totalElapsedTime;
-			double C1ElapsedTime;
-			double C2ElapsedTime;
-
-			void validate () const;
+			int nNodes{};
+			int nVariables{};
+			int nOriginalConstraints{};
+			int nC1Constraints{};
+			int nC2Constraints{};
+			double totalElapsedTime{};
+			double C1ElapsedTime{};
+			double C2ElapsedTime{};
 
 		};
 
-		ImmutableArray<int> enabledIndices;
-		ImmutableArray<int> bestIndexPerQuery;
-		Real totalCost;
-		Problem problem;
-		Options options;
-		Statistics statistics;
-
-		void validate () const;
+		ImmutableArray<int> enabledIndices{};
+		ImmutableArray<int> bestIndexPerQuery{};
+		Real totalCost{};
+		Problem problem{};
+		Options options{};
+		Statistics statistics{};
 
 	};
 
 }
-	
+
 #endif

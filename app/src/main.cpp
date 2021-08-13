@@ -1,18 +1,25 @@
 ﻿#include <iostream>
-#include <index-selector/immutable_array.hpp>
-#include <index-selector/index.hpp>
 #include <index-selector/solve.hpp>
-#include <vector>
 
-using namespace std;
+using namespace IndexSelector;
+
+Problem eb ()
+{
+	return Problem{
+		.maxSize{19},
+		.unindexedQueryCosts{ 6200,2000,800,6700,5000,2000 },
+		.indices{
+			Index{.size {10}, .fixedCost{200}, .queryCosts{1300, 900, 800, 6700, 5000, 2000}},
+			Index{.size {5}, .fixedCost{1200}, .queryCosts{6200, 700, 800, 6700, 5000, 2000}},
+			Index{.size {10}, .fixedCost{400}, .queryCosts{6200, 2000, 800, 1700, 2200, 2000}},
+			Index{.size {8}, .fixedCost{2400}, .queryCosts{6200, 2000, 800, 6700, 1200, 2000}},
+			Index{.size {8}, .fixedCost{250}, .queryCosts{6200, 2000, 800, 2700, 4200, 750}}
+		}
+	};
+}
 
 int main ()
 {
-	IndexSelector::ImmutableArray<float> c{ 1,2,3,4,5 };
-	for (int q : c)
-	{
-		cout << q;
-	}
-	IndexSelector::Index i{ .size = 78, .fixedCost = 6, .queryCosts = c };
+	solve (eb (), {});
 	return 0;
 }

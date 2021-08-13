@@ -7,13 +7,13 @@ namespace IndexSelector
 	struct Options final
 	{
 
-		bool prune;
-		bool enableSelectionCuts;
-		bool enableSizeCuts;
-		bool enableSizeOptimalCuts;
-		int heuristicSizeCutsMaxSize;
+		bool prune{ true };
+		bool enableSelectionCuts{ true };
+		bool enableSizeCuts{ false };
+		bool enableSizeOptimalCuts{ false };
+		int heuristicSizeCutsMaxSize{ 10 };
 
-		void validate ();
+		void validate () const;
 
 	};
 

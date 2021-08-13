@@ -11,11 +11,12 @@ namespace IndexSelector
 	struct Problem final
 	{
 
-		ImmutableArray<Real> unindexedQueryCosts;
-		Real maxSize;
-		ImmutableArray<Index> indices;
+		Real maxSize{};
+		ImmutableArray<Real> unindexedQueryCosts{};
+		ImmutableArray<Index> indices{};
 
-		int nQueries () const;
+		size_t nQueries () const;
+		size_t nIndices () const;
 		void validate () const;
 
 	};

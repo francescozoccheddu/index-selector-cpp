@@ -10,11 +10,11 @@ namespace IndexSelector
 	struct Index final
 	{
 
-		Real size;
-		Real fixedCost;
-		ImmutableArray<Real> queryCosts;
+		Real size{};
+		Real fixedCost{};
+		ImmutableArray<Real> queryCosts{};
 
-		int nQueries () const;
+		size_t nQueries () const;
 		void validate () const;
 
 	};
