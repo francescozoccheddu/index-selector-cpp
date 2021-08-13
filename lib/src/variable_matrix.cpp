@@ -44,9 +44,9 @@ namespace IndexSelector
 			std::format_to (std::back_inserter (name), "q{}_ux", q);
 			uxs[q] = IloBoolVar{ _env , name.c_str () };
 		}
-		m_uxs = ImmutableArray<IloBoolVar>::from_immutable_data (uxs, nq);
-		m_xs = ImmutableArray<std::optional<IloBoolVar>>::from_immutable_data (xs, ni * nq);
-		m_ys = ImmutableArray<std::optional<IloBoolVar>>::from_immutable_data (ys, ni);
+		m_uxs = ImmutableArray<IloBoolVar>::take_ownership (uxs, nq);
+		m_xs = ImmutableArray<std::optional<IloBoolVar>>::take_ownership (xs, ni * nq);
+		m_ys = ImmutableArray<std::optional<IloBoolVar>>::take_ownership (ys, ni);
 	}
 
 	const std::optional<IloBoolVar>& VariableMatrix::x (int _i, int _q) const

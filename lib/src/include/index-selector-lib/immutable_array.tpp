@@ -63,7 +63,7 @@ namespace IndexSelector
 #pragma region Methods
 
 	template<typename TValue>
-	 ImmutableArray<TValue> ImmutableArray<TValue>::from_immutable_data (TValue* _pData, size_t _nData)
+	 ImmutableArray<TValue> ImmutableArray<TValue>::take_ownership (TValue* _pData, size_t _nData)
 	{
 		return ImmutableArray{ _pData, _nData };
 	}

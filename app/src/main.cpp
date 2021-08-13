@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <random>
 #include <index-selector/solve.hpp>
 
 using namespace IndexSelector;
@@ -18,13 +19,44 @@ Problem eb_problem ()
 	};
 }
 
-Problem rand_problem ()
+Problem rand_problem (size_t _nIndices, size_t _nQueries, double _sizeRatio = 0.1, double _fixedCostRatio = 0.1, unsigned int _seed = 0)
 {
-	throw nullptr;
+	constexpr Real mmr = 2;
+	std::mt19937 gen{ _seed };
+	std::uniform_real_distribution r = std::uniform_real_distribution<Real>{ 1, mmr };
+	Problem problem{};
+	{
+		Real* const ucs = new Real[_nQueries];
+		for (int q{ 0 }; q < _nQueries; q++)
+		{
+			ucs[q] = r (gen);
+		}
+		problem.unindexedQueryCosts = ImmutableArray<Real>::take_ownership (ucs, _nQueries);
+	}
+	{
+		Index* const idxs = new Index[_nIndices];
+		double totalSize{};
+		for (int i{ 0 }; i < _nIndices; i++)
+		{
+			Index& index = idxs[i];
+			Real* const cs = new Real[_nQueries];
+			for (int q{ 0 }; q < _nQueries; q++)
+			{
+				cs[q] = r (gen);
+			}
+			index.queryCosts = ImmutableArray<Real>::take_ownership (cs, _nQueries);
+			index.fixedCost = r (gen) * _fixedCostRatio;
+			index.size = r (gen);
+			totalSize += index.size;
+		}
+		problem.indices = ImmutableArray<Index>::take_ownership (idxs, _nIndices);
+		problem.maxSize = totalSize * _sizeRatio;
+	}
+	return problem;
 }
 
 int main ()
 {
-	solve (eb_problem (), {});
+	solve (rand_problem (40, 40), {});
 	return 0;
 }

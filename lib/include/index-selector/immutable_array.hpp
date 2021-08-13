@@ -53,7 +53,7 @@ namespace IndexSelector
 
 		};
 
-		static ImmutableArray<TValue> from_immutable_data (TValue* _pData, size_t _nData);
+		static ImmutableArray<TValue> take_ownership (TValue* _pData, size_t _nData);
 
 		ImmutableArray () = default;
 
