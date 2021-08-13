@@ -5,7 +5,7 @@
 namespace IndexSelector
 {
 
-	VariableMatrix::VariableMatrix (const IloEnv _env, const Problem& _problem, bool _prune) : m_problem{ _problem }
+	VariableMatrix::VariableMatrix (const IloEnv _env, const Problem& _problem, bool _prune) : m_pProblem{ &_problem }
 	{
 		std::string name{ 13 };
 		const size_t ni{ _problem.nIndices () }, nq{ _problem.nQueries () };
@@ -26,7 +26,7 @@ namespace IndexSelector
 						valid = true;
 						name.clear ();
 						std::format_to (std::back_inserter (name), "i{}_q{}_x", i, q);
-						xs[i * nq + q] = IloBoolVar{ _env , name.c_str() };
+						xs[i * nq + q] = IloBoolVar{ _env , name.c_str () };
 					}
 				}
 				if (!_prune || valid)
@@ -34,7 +34,7 @@ namespace IndexSelector
 					m_nActiveYs++;
 					name.clear ();
 					std::format_to (std::back_inserter (name), "i{}_y", i);
-					ys[i] = IloBoolVar{ _env , name.c_str() };
+					ys[i] = IloBoolVar{ _env , name.c_str () };
 				}
 			}
 		}
@@ -51,11 +51,12 @@ namespace IndexSelector
 
 	const std::optional<IloBoolVar>& VariableMatrix::x (int _i, int _q) const
 	{
-		if (_i < 0 || _q < 0 || _i >= m_problem.nIndices () || _q >= m_problem.nQueries ())
+		const Problem& p = problem ();
+		if (_i < 0 || _q < 0 || _i >= p.nIndices () || _q >= p.nQueries ())
 		{
 			throw std::invalid_argument ("Out of range");
 		}
-		return m_xs[_i * m_problem.nQueries () + _q];
+		return m_xs[_i * p.nQueries () + _q];
 	}
 
 	const std::optional<IloBoolVar>& VariableMatrix::y (int _i) const
@@ -70,7 +71,7 @@ namespace IndexSelector
 
 	const Problem& VariableMatrix::problem () const
 	{
-		return m_problem;
+		return *m_pProblem;
 	}
 
 	size_t VariableMatrix::nActiveXs () const

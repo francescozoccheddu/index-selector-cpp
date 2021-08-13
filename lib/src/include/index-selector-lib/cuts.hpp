@@ -8,6 +8,21 @@
 namespace IndexSelector
 {
 
+	class CutCallbackI final : public IloCplex::UserCutCallbackI
+	{
+
+		const VariableMatrix& m_variables;
+		const Options& m_options;
+
+	public:
+
+		IloCplex::CallbackI* duplicateCallback () const override;
+
+		CutCallbackI (IloEnv _env, const VariableMatrix& _variables, const Options& _options);
+
+		void main () override;
+	};
+
 	IloCplex::Callback create_cut_callback (const IloEnv _env, const VariableMatrix& _variables, const Options& _options);
 
 }
