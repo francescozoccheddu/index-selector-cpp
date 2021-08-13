@@ -1,5 +1,5 @@
-#ifndef INCLUDED_INDEX_SELECTOR_LIB_VARIABLES
-#define INCLUDED_INDEX_SELECTOR_LIB_VARIABLES
+#ifndef INCLUDED_INDEX_SELECTOR_LIB_VARIABLE_MATRIX
+#define INCLUDED_INDEX_SELECTOR_LIB_VARIABLE_MATRIX
 
 #include <ilcplex/ilocplex.h>
 #include <optional>
@@ -19,7 +19,7 @@ namespace IndexSelector
 
 	public:
 
-		VariableMatrix (const IloEnv& _env, const Problem& _problem, bool _prune = true);
+		VariableMatrix (const IloEnv _env, const Problem& _problem, bool _prune = true);
 
 		const std::optional<IloBoolVar>& x (int _i, int _q) const;
 		const std::optional<IloBoolVar>& y (int _i) const;

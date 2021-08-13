@@ -3,7 +3,7 @@
 
 using namespace IndexSelector;
 
-Problem eb ()
+Problem eb_problem ()
 {
 	return Problem{
 		.maxSize{19},
@@ -18,8 +18,13 @@ Problem eb ()
 	};
 }
 
+Problem rand_problem ()
+{
+	throw nullptr;
+}
+
 int main ()
 {
-	solve (eb (), {});
+	solve (eb_problem (), {});
 	return 0;
 }

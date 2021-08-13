@@ -5,7 +5,7 @@
 namespace IndexSelector
 {
 
-	VariableMatrix::VariableMatrix (const IloEnv& _env, const Problem& _problem, bool _prune) : m_problem{ _problem }
+	VariableMatrix::VariableMatrix (const IloEnv _env, const Problem& _problem, bool _prune) : m_problem{ _problem }
 	{
 		std::string name{ 13 };
 		const size_t ni{ _problem.nIndices () }, nq{ _problem.nQueries () };
