@@ -1,11 +1,13 @@
 #include <index-selector-lib/variable_matrix.hpp>
 #include <stdexcept>
+#include <format>
 
 namespace IndexSelector
 {
 
 	VariableMatrix::VariableMatrix (const IloEnv& _env, const Problem& _problem, bool _prune) : m_problem{ _problem }
 	{
+		std::string name{ 13 };
 		const size_t ni{ _problem.nIndices () }, nq{ _problem.nQueries () };
 		std::optional<IloBoolVar>* const xs = new std::optional<IloBoolVar>[ni * nq];
 		std::optional<IloBoolVar>* const ys = new std::optional<IloBoolVar>[ni];
@@ -22,19 +24,25 @@ namespace IndexSelector
 					{
 						m_nActiveXs++;
 						valid = true;
-						xs[i * nq + q] = IloBoolVar{ _env , nullptr };
+						name.clear ();
+						std::format_to (std::back_inserter (name), "i{}_q{}_x", i, q);
+						xs[i * nq + q] = IloBoolVar{ _env , name.c_str() };
 					}
 				}
 				if (!_prune || valid)
 				{
 					m_nActiveYs++;
-					ys[i] = IloBoolVar{ _env , nullptr };
+					name.clear ();
+					std::format_to (std::back_inserter (name), "i{}_y", i);
+					ys[i] = IloBoolVar{ _env , name.c_str() };
 				}
 			}
 		}
 		for (size_t q{ 0 }; q < nq; q++)
 		{
-			uxs[q] = IloBoolVar{ _env , nullptr };
+			name.clear ();
+			std::format_to (std::back_inserter (name), "q{}_ux", q);
+			uxs[q] = IloBoolVar{ _env , name.c_str () };
 		}
 		m_uxs = ImmutableArray<IloBoolVar>::from_immutable_data (uxs, nq);
 		m_xs = ImmutableArray<std::optional<IloBoolVar>>::from_immutable_data (xs, ni * nq);

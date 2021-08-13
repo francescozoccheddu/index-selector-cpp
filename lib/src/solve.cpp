@@ -1,6 +1,7 @@
 #include <index-selector/solve.hpp>
 #include <index-selector-lib/variable_matrix.hpp>
 #include <ilcplex/ilocplex.h>
+#include <format>
 
 namespace IndexSelector
 {
@@ -43,7 +44,8 @@ namespace IndexSelector
 
 	IloModel create_model (const Problem& _problem, const VariableMatrix& _variables, const IloEnv& _env)
 	{
-		IloModel model{ _env };
+		IloModel model{ _env , "Index selection" };
+		std::string name{ 9 };
 		if (_problem.nIndices () > 0)
 		{
 			IloExpr actualSize{ _env };
@@ -55,7 +57,7 @@ namespace IndexSelector
 					actualSize += *y * _problem.indices[i].size;
 				}
 			}
-			model.add (actualSize <= _problem.maxSize);
+			model.add (actualSize <= _problem.maxSize).setName ("ms");
 			actualSize.end ();
 		}
 		for (int q{ 0 }; q < _problem.nQueries (); q++)
@@ -69,7 +71,9 @@ namespace IndexSelector
 					nX += *x;
 				}
 			}
-			model.add (nX == 1);
+			name.clear ();
+			std::format_to (std::back_inserter (name), "squ_q{}", q);
+			model.add (nX == 1).setName (name.c_str ());
 			nX.end ();
 		}
 		for (int i{ 0 }; i < _problem.nIndices (); i++)
@@ -84,10 +88,13 @@ namespace IndexSelector
 					const std::optional<IloBoolVar>& x{ _variables.x (i, q) };
 					if (x)
 					{
+						nActiveX++;
 						nX += *x;
 					}
 				}
-				model.add (nX <= nActiveX * *y);
+				name.clear ();
+				std::format_to (std::back_inserter (name), "miu_i{}", i);
+				model.add (nX <= nActiveX * *y).setName (name.c_str ());
 				nX.end ();
 			}
 		}
@@ -114,7 +121,7 @@ namespace IndexSelector
 			{
 				cost += _variables.ux (q) * _problem.unindexedQueryCosts[q];
 			}
-			model.add (IloMinimize (_env, cost));
+			model.add (IloMinimize (_env, cost)).setName ("c");
 			cost.end ();
 		}
 		return model;
