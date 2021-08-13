@@ -14,7 +14,8 @@ namespace IndexSelector
 
 		ImmutableArray<std::optional<IloBoolVar>> m_xs{}, m_ys{};
 		ImmutableArray<IloBoolVar> m_uxs{};
-		size_t m_nIndices{}, m_nQueries{}, m_nActiveXs{}, m_nActiveYs{};
+		size_t m_nActiveXs{}, m_nActiveYs{};
+		Problem m_problem{};
 
 	public:
 
@@ -24,8 +25,7 @@ namespace IndexSelector
 		const std::optional<IloBoolVar>& y (int _i) const;
 		const IloBoolVar& ux (int _i) const;
 
-		size_t nIndices () const;
-		size_t nQueries () const;
+		const Problem& problem () const;
 		size_t nActiveXs () const;
 		size_t nActiveYs () const;
 

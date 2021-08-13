@@ -71,13 +71,13 @@ namespace IndexSelector
 	template<typename TValue>
 	 const TValue* ImmutableArray<TValue>::data () const
 	{
-		return m_data.get ();
+		return *m_data;
 	}
 
 	template<typename TValue>
 	 const TValue* ImmutableArray<TValue>::operator* () const
 	{
-		return m_data.get ();
+		return *m_data;
 	}
 
 	template<typename TValue>
@@ -87,25 +87,25 @@ namespace IndexSelector
 	}
 
 	template<typename TValue>
-	 TValue ImmutableArray<TValue>::operator[](size_t _index) const
+	 const TValue& ImmutableArray<TValue>::operator[](size_t _index) const
 	{
 		if (_index < 0 or _index >= m_nData)
 		{
 			throw std::invalid_argument{ "Index out of range" };
 		}
-		return m_data.get ()[_index];
+		return m_data[_index];
 	}
 
 	template<typename TValue>
 	 ImmutableArray<TValue>::Iterator ImmutableArray<TValue>::cbegin () const
 	{
-		return Iterator{ m_data.get () };
+		return Iterator{ &m_data[0] };
 	}
 
 	template<typename TValue>
 	 ImmutableArray<TValue>::Iterator ImmutableArray<TValue>::cend ()   const
 	{
-		return Iterator{ m_data.get () + m_nData };
+		return Iterator{ &m_data[m_nData] };
 	}
 
 	template<typename TValue>

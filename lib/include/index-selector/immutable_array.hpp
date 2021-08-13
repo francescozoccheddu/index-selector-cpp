@@ -15,7 +15,7 @@ namespace IndexSelector
 	class ImmutableArray final
 	{
 
-		std::shared_ptr<TValue> m_data{};
+		std::shared_ptr<TValue[]> m_data{};
 		size_t m_nData{};
 
 		template<typename TConvertible>
@@ -65,7 +65,7 @@ namespace IndexSelector
 		requires std::convertible_to<TConvertible, TValue>
 			ImmutableArray (const TConvertible* _pData, size_t _nData);
 
-		TValue operator[](size_t _index) const;
+		const TValue& operator[](size_t _index) const;
 
 		size_t size () const;
 

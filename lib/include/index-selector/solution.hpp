@@ -15,11 +15,11 @@ namespace IndexSelector
 		struct Statistics final
 		{
 
-			int nNodes{};
-			int nVariables{};
-			int nOriginalConstraints{};
-			int nC1Constraints{};
-			int nC2Constraints{};
+			size_t nNodes{};
+			size_t nVariables{};
+			size_t nOriginalConstraints{};
+			size_t nC1Constraints{};
+			size_t nC2Constraints{};
 			double totalElapsedTime{};
 			double C1ElapsedTime{};
 			double C2ElapsedTime{};

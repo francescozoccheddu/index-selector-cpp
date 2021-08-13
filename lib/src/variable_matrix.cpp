@@ -4,24 +4,25 @@
 namespace IndexSelector
 {
 
-	VariableMatrix::VariableMatrix (const IloEnv& _env, const Problem& _problem, bool _prune) : m_nIndices{ _problem.nIndices () }, m_nQueries{ _problem.nQueries () }
+	VariableMatrix::VariableMatrix (const IloEnv& _env, const Problem& _problem, bool _prune) : m_problem{ _problem }
 	{
-		std::optional<IloBoolVar>* xs = new std::optional<IloBoolVar>[m_nIndices * m_nQueries];
-		std::optional<IloBoolVar>* ys = new std::optional<IloBoolVar>[m_nIndices];
-		IloBoolVar* uxs = new IloBoolVar[m_nQueries];
-		for (size_t i{ 0 }; i < m_nIndices; i++)
+		const size_t ni{ _problem.nIndices () }, nq{ _problem.nQueries () };
+		std::optional<IloBoolVar>* const xs = new std::optional<IloBoolVar>[ni * nq];
+		std::optional<IloBoolVar>* const ys = new std::optional<IloBoolVar>[ni];
+		IloBoolVar* const uxs = new IloBoolVar[nq];
+		for (size_t i{ 0 }; i < ni; i++)
 		{
 			const Index& index{ _problem.indices[i] };
 			if (!_prune || index.size <= _problem.maxSize)
 			{
 				bool valid{ false };
-				for (size_t q{ 0 }; q < m_nQueries; q++)
+				for (size_t q{ 0 }; q < nq; q++)
 				{
 					if (!_prune || index.queryCosts[q] < _problem.unindexedQueryCosts[q])
 					{
 						m_nActiveXs++;
 						valid = true;
-						xs[i * m_nQueries + q] = IloBoolVar{ _env , nullptr };
+						xs[i * nq + q] = IloBoolVar{ _env , nullptr };
 					}
 				}
 				if (!_prune || valid)
@@ -31,22 +32,22 @@ namespace IndexSelector
 				}
 			}
 		}
-		for (size_t q{ 0 }; q < m_nQueries; q++)
+		for (size_t q{ 0 }; q < nq; q++)
 		{
 			uxs[q] = IloBoolVar{ _env , nullptr };
 		}
-		m_uxs = ImmutableArray<IloBoolVar>::from_immutable_data (uxs, m_nQueries);
-		m_xs = ImmutableArray<std::optional<IloBoolVar>>::from_immutable_data (xs, m_nIndices * m_nQueries);
-		m_ys = ImmutableArray<std::optional<IloBoolVar>>::from_immutable_data (ys, m_nIndices);
+		m_uxs = ImmutableArray<IloBoolVar>::from_immutable_data (uxs, nq);
+		m_xs = ImmutableArray<std::optional<IloBoolVar>>::from_immutable_data (xs, ni * nq);
+		m_ys = ImmutableArray<std::optional<IloBoolVar>>::from_immutable_data (ys, ni);
 	}
 
 	const std::optional<IloBoolVar>& VariableMatrix::x (int _i, int _q) const
 	{
-		if (_i < 0 || _q < 0 || _i >= m_nIndices || _q >= m_nQueries)
+		if (_i < 0 || _q < 0 || _i >= m_problem.nIndices () || _q >= m_problem.nQueries ())
 		{
 			throw std::invalid_argument ("Out of range");
 		}
-		return m_xs[_i * m_nQueries + _q];
+		return m_xs[_i * m_problem.nQueries () + _q];
 	}
 
 	const std::optional<IloBoolVar>& VariableMatrix::y (int _i) const
@@ -59,14 +60,9 @@ namespace IndexSelector
 		return m_uxs[_i];
 	}
 
-	size_t VariableMatrix::nIndices () const
+	const Problem& VariableMatrix::problem () const
 	{
-		return m_nIndices;
-	}
-
-	size_t VariableMatrix::nQueries () const
-	{
-		return m_nQueries;
+		return m_problem;
 	}
 
 	size_t VariableMatrix::nActiveXs () const
