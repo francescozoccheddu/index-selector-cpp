@@ -57,6 +57,7 @@ Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.2,
 
 int main ()
 {
-	Solution s = solve (rand_problem (100, 100), { .enableSelectionCuts{false} });
+	const Solution s = solve (rand_problem (100, 100), { .enableSelectionCuts{false} });
+	std::cout << std::endl << s.totalCost << " in " << s.statistics.totalElapsedTime << "s" << std::endl;
 	return 0;
 }

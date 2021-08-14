@@ -8,7 +8,7 @@
 namespace IndexSelector
 {
 
-	Solution solve (const Problem& _problem, const Options& _options);
+	const Solution solve (const Problem& _problem, const Options& _options);
 
 }
 

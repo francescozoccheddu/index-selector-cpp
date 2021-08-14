@@ -13,6 +13,10 @@ namespace IndexSelector
 	class Cutter
 	{
 
+		IloFastMutex m_mutex{};
+
+	protected:
+
 		class Callback : private IloCplex::UserCutCallbackI
 		{
 
@@ -30,31 +34,28 @@ namespace IndexSelector
 
 		public:
 
-			bool getValue (IloBoolVar _var);
+			Real getValue (IloBoolVar _var);
 			using IloCplex::UserCutCallbackI::add;
 			using IloCplex::UserCutCallbackI::addLocal;
 
 		};
 
-		IloFastMutex m_mutex{};
-
-	protected:
-
-		Cutter (const Cutter&) = default;
-		Cutter (IloEnv _env, const VariableMatrix& _variables, const Options& _options, Solution::Statistics& _statistics);
+		Cutter (const Cutter&);
 
 		virtual void reportElapsedTime (double _elapsedTime) const;
 		virtual void cut (Callback& _callback) = 0;
-		virtual Cutter* clone ();
+		virtual Cutter* clone () const;
 
 	public:
+
+		Cutter (IloEnv _env, const VariableMatrix& _variables, const Options& _options, Solution::Statistics& _statistics);
 
 		const IloEnv env;
 		const VariableMatrix& variables;
 		const Options& options;
 		Solution::Statistics& statistics;
 
-		IloCplex::Callback createCallback (bool _shared = true);
+		IloCplex::Callback createCallback ();
 
 	};
 

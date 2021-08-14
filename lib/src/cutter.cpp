@@ -45,10 +45,13 @@ namespace IndexSelector
 		}
 	}
 
-	bool Cutter::Callback::getValue (IloBoolVar _var)
+	Real Cutter::Callback::getValue (IloBoolVar _var)
 	{
-		return IloCplex::UserCutCallbackI::getValue (_var);
+		return static_cast<Real>(IloCplex::UserCutCallbackI::getValue (_var));
 	}
+
+	Cutter::Cutter (const Cutter& _copy) : m_mutex{}, env{ _copy.env }, variables{ _copy.variables }, options{ _copy.options }, statistics{ _copy.statistics }
+	{}
 
 	Cutter::Cutter (IloEnv _env, const VariableMatrix& _variables, const Options& _options, Solution::Statistics& _statistics) : env{ _env }, variables{ _variables }, options{ _options }, statistics{ _statistics }
 	{}
@@ -56,14 +59,14 @@ namespace IndexSelector
 	void Cutter::reportElapsedTime (double _elapsedTime) const
 	{}
 
-	Cutter* Cutter::clone ()
+	Cutter* Cutter::clone () const
 	{
 		throw std::logic_error ("Cutter must be shared since it does not implement clone()");
 	}
 
-	IloCplex::Callback Cutter::createCallback (bool _shared)
+	IloCplex::Callback Cutter::createCallback ()
 	{
-		return IloCplex::Callback{ new (env) Callback {env, this, _shared} };
+		return IloCplex::Callback{ new (env) Callback {env, this, options.shareCutters} };
 	}
 
 }

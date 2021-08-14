@@ -9,9 +9,9 @@
 namespace IndexSelector
 {
 
-	static Solution solve (const IloEnv _env, const Problem& _problem, const Options& _options);
+	static const Solution solve (const IloEnv _env, const Problem& _problem, const Options& _options);
 
-	Solution solve (const Problem& _problem, const Options& _options)
+	const Solution solve (const Problem& _problem, const Options& _options)
 	{
 		_problem.validate ();
 		_options.validate ();
@@ -30,7 +30,7 @@ namespace IndexSelector
 		return solution;
 	}
 
-	Solution solve (const IloEnv _env, const Problem& _problem, const Options& _options)
+	const Solution solve (const IloEnv _env, const Problem& _problem, const Options& _options)
 	{
 		Solution s{};
 		VariableMatrix v{ _env, _problem, _options.reduceVariables };
@@ -42,7 +42,10 @@ namespace IndexSelector
 #endif 
 		c.setParam (IloCplex::Param::MIP::Strategy::Search, IloCplex::Traditional);
 		c.setParam (IloCplex::Param::TimeLimit, _options.timeLimit);
-		//c.use (create_cut_callback (_env, v, _options, s.statistics));
+		if (_options.enableSelectionCuts)
+		{
+			c.use ((new SelectionCutter{ _env, v, _options, s.statistics })->createCallback ());
+		}
 		std::chrono::steady_clock::time_point startTime = std::chrono::high_resolution_clock::now ();
 		s.succeeded = c.solve ();
 		std::chrono::steady_clock::time_point endTime = std::chrono::high_resolution_clock::now ();
