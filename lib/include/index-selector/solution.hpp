@@ -6,6 +6,9 @@
 #include <index-selector/problem.hpp>
 #include <index-selector/options.hpp>
 
+#define INDEX_SELECTOR_MEASURE_TIME
+
+
 namespace IndexSelector
 {
 
@@ -21,8 +24,10 @@ namespace IndexSelector
 			size_t nSelectionCuts{};
 			size_t nSizeCuts{};
 			double totalElapsedTime{};
+#ifdef INDEX_SELECTOR_MEASURE_TIME
 			double selectionCutElapsedTime{};
 			double sizeCutElapsedTime{};
+#endif
 
 		};
 

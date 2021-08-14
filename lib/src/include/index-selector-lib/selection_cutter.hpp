@@ -22,12 +22,14 @@ namespace IndexSelector
 	protected:
 
 		void cut (Callback& _callback) override;
-		void reportElapsedTime (double _time) const override;
 		SelectionCutter* clone () const override;
 
 	public:
 
-		using Cutter::Cutter;
+		static IloCplex::Callback createAndGetCallback (Cutter::Manager& _manager);
+
+		SelectionCutter (Cutter::Manager& _manager);
+		~SelectionCutter ();
 
 	};
 

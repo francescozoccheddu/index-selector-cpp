@@ -37,19 +37,23 @@ namespace IndexSelector
 		IloModel m{ create_model (_env, v, s.statistics) };
 		IloCplex c{ _env };
 		c.extract (m);
-#ifdef NDEBUG 
 		c.setOut (_env.getNullStream ());
-#endif 
 		c.setParam (IloCplex::Param::MIP::Strategy::Search, IloCplex::Traditional);
 		c.setParam (IloCplex::Param::TimeLimit, _options.timeLimit);
+		Cutter::Manager selectionCutManager{ _env, v, _options };
+		Cutter::Manager sizeCutManager{ _env, v, _options };
 		if (_options.enableSelectionCuts)
 		{
-			c.use ((new SelectionCutter{ _env, v, _options, s.statistics })->createCallback ());
+			c.use (SelectionCutter::createAndGetCallback (selectionCutManager));
 		}
 		std::chrono::steady_clock::time_point startTime = std::chrono::high_resolution_clock::now ();
 		s.succeeded = c.solve ();
 		std::chrono::steady_clock::time_point endTime = std::chrono::high_resolution_clock::now ();
 		std::chrono::duration<double> elapsedTime = endTime - startTime;
+		s.statistics.nSelectionCuts = selectionCutManager.nCuts ();
+#ifdef INDEX_SELECTOR_MEASURE_TIME
+		s.statistics.selectionCutElapsedTime = selectionCutManager.elapsedTime ();
+#endif
 		s.statistics.totalElapsedTime = elapsedTime.count ();
 		s.statistics.nNodes = static_cast<size_t>(c.getNnodes ());
 		s.statistics.nVariables = static_cast<size_t>(c.getNbinVars ());
