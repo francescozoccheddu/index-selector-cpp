@@ -4,7 +4,7 @@
 namespace IndexSelector
 {
 
-	using Real = float;
+	using Real = double;
 
 }
 

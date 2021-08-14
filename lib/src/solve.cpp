@@ -2,9 +2,12 @@
 #include <index-selector-lib/variable_matrix.hpp>
 #include <index-selector-lib/model.hpp>
 #include <index-selector-lib/selection_cutter.hpp>
+#include <index-selector-lib/optimal_size_cutter.hpp>
 #include <ilcplex/ilocplex.h>
 #include <format>
 #include <chrono>
+
+#define INDEX_SELECTOR_DISABLE_HEURISTICS
 
 namespace IndexSelector
 {
@@ -36,16 +39,28 @@ namespace IndexSelector
 		VariableMatrix v{ _env, _problem, _options.reduceVariables };
 		IloModel m{ create_model (_env, v, s.statistics) };
 		IloCplex c{ _env };
-		c.extract (m);
+#ifndef NDEBUG
 		c.setOut (_env.getNullStream ());
+		c.setError (_env.getNullStream ());
+#endif
 		c.setParam (IloCplex::Param::MIP::Strategy::Search, IloCplex::Traditional);
 		c.setParam (IloCplex::Param::TimeLimit, _options.timeLimit);
+#ifdef INDEX_SELECTOR_DISABLE_HEURISTICS
+		c.setParam (IloCplex::Param::MIP::Strategy::HeuristicEffort, 0);
+#endif
+		c.extract (m);
 		Cutter::Manager selectionCutManager{ _env, v, _options };
 		Cutter::Manager sizeCutManager{ _env, v, _options };
 		std::vector<IloCplex::Callback> callbacks;
 		if (_options.enableSelectionCuts)
 		{
-			callbacks.push_back(c.use (SelectionCutter::createAndGetCallback (selectionCutManager)));
+			callbacks.push_back (c.use (SelectionCutter::createAndGetCallback (selectionCutManager)));
+		}
+		switch (_options.sizeCutMode)
+		{
+			case Options::ESizeCutMode::Optimal:
+				callbacks.push_back (c.use (OptimalSizeCutter::createAndGetCallback (sizeCutManager)));
+				break;
 		}
 		std::chrono::steady_clock::time_point startTime = std::chrono::high_resolution_clock::now ();
 		s.succeeded = c.solve ();
@@ -56,8 +71,10 @@ namespace IndexSelector
 		std::chrono::steady_clock::time_point endTime = std::chrono::high_resolution_clock::now ();
 		std::chrono::duration<double> elapsedTime = endTime - startTime;
 		s.statistics.nSelectionCuts = selectionCutManager.nCuts ();
+		s.statistics.nSizeCuts = sizeCutManager.nCuts ();
 #ifdef INDEX_SELECTOR_MEASURE_TIME
 		s.statistics.selectionCutElapsedTime = selectionCutManager.elapsedTime ();
+		s.statistics.sizeCutElapsedTime = sizeCutManager.elapsedTime ();
 #endif
 		s.statistics.totalElapsedTime = elapsedTime.count ();
 		s.statistics.nNodes = static_cast<size_t>(c.getNnodes ());

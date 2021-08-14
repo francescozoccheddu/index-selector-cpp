@@ -19,17 +19,16 @@ Problem eb_problem ()
 	};
 }
 
-Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.1, Real _fixedCostRatio = 0.1, unsigned int _seed = 0)
+Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.1, Real _fixedCostRatio = 0.1, Real _maxMinRatio = 5, Real _unindexedIndexedRatio = 2, unsigned int _seed = 0)
 {
-	constexpr Real mmr = 2;
 	std::mt19937 gen{ _seed };
-	std::uniform_real_distribution r = std::uniform_real_distribution<Real>{ 1, mmr };
+	std::uniform_real_distribution r = std::uniform_real_distribution<Real>{ 1, _maxMinRatio };
 	Problem problem{};
 	{
 		Real* const ucs = new Real[_nQueries];
 		for (int q{ 0 }; q < _nQueries; q++)
 		{
-			ucs[q] = r (gen);
+			ucs[q] = r (gen) * _unindexedIndexedRatio;
 		}
 		problem.unindexedQueryCosts = ImmutableArray<Real>::take_ownership (ucs, _nQueries);
 	}
@@ -57,7 +56,7 @@ Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.1,
 
 int main ()
 {
-	const Solution s = solve (rand_problem (60, 60), { .shareCutters{false}, .enableSelectionCuts{true} });
+	const Solution s = solve (rand_problem (120, 80, 0.02), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
 	std::cout << std::endl << s.totalCost << " in " << s.statistics.totalElapsedTime << "s" << std::endl;
 	return 0;
 }

@@ -3,8 +3,12 @@
 namespace IndexSelector
 {
 
-	SelectionCutter::SelectionCutter (Cutter::Manager& _manager) : Cutter{ _manager }
+	SelectionCutter::SelectionCutter (Cutter::Manager& _manager) : SimpleCutter{ _manager }
 	{
+		if (!manager.options.enableSelectionCuts)
+		{
+			return;
+		}
 		const size_t ni{ _manager.variables.problem ().nIndices () }, nq{ _manager.variables.problem ().nQueries () };
 		for (size_t i{ 0 }; i < ni; i++)
 		{
@@ -27,12 +31,16 @@ namespace IndexSelector
 
 	void SelectionCutter::cut (Callback& _callback)
 	{
+		if (!manager.options.enableSelectionCuts)
+		{
+			return;
+		}
 		_callback.lockIfShared ();
 		std::forward_list<SelectionIndex>::iterator yoit = m_selectionIndices.before_begin (), yit = std::next (yoit);
 		while (yit != m_selectionIndices.end ())
 		{
 			SelectionIndex& si{ *yit };
-			IloNum vy = _callback.getValue (si.y);
+			Real vy = _callback.getValue (si.y);
 			bool useful{ false };
 			{
 				std::forward_list<IloBoolVar>::iterator xoit = si.xs.before_begin (), xit = std::next (xoit);
@@ -60,16 +68,6 @@ namespace IndexSelector
 			}
 		}
 		_callback.unlockIfShared ();
-	}
-
-	SelectionCutter* SelectionCutter::clone () const
-	{
-		return new SelectionCutter{ *this };
-	}
-
-	IloCplex::Callback SelectionCutter::createAndGetCallback (Cutter::Manager& _manager)
-	{
-		return (new SelectionCutter (_manager))->createCallback (true);
 	}
 
 }

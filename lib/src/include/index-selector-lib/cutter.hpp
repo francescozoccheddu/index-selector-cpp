@@ -8,7 +8,7 @@
 #include <index-selector/options.hpp>
 #include <atomic>
 #include <chrono>
-#include <limits>
+#include <concepts>
 
 
 namespace IndexSelector
@@ -95,6 +95,28 @@ namespace IndexSelector
 		virtual ~Cutter () = default;
 
 		IloCplex::Callback createCallback (bool _own = false);
+
+	};
+
+	template<typename TCutter>
+	class SimpleCutter : public Cutter
+	{
+
+	protected:
+
+		using Cutter::Cutter;
+
+		Cutter* clone () const override
+		{
+			return new TCutter{ static_cast<const TCutter&>(*this) };
+		}
+
+	public:
+
+		static IloCplex::Callback createAndGetCallback (Manager& _manager)
+		{
+			return (new TCutter (_manager))->createCallback (true);
+		}
 
 	};
 

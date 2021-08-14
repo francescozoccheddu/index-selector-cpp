@@ -7,7 +7,7 @@
 namespace IndexSelector
 {
 
-	class SelectionCutter final : public Cutter
+	class SelectionCutter final : public SimpleCutter<SelectionCutter>
 	{
 
 		struct SelectionIndex
@@ -22,11 +22,8 @@ namespace IndexSelector
 	protected:
 
 		void cut (Callback& _callback) override;
-		SelectionCutter* clone () const override;
 
 	public:
-
-		static IloCplex::Callback createAndGetCallback (Cutter::Manager& _manager);
 
 		SelectionCutter (Cutter::Manager& _manager);
 
