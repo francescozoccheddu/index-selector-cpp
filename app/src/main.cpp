@@ -19,7 +19,7 @@ Problem eb_problem ()
 	};
 }
 
-Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.1, Real _fixedCostRatio = 0.1, unsigned int _seed = 0)
+Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.2, Real _fixedCostRatio = 0.1, unsigned int _seed = 0)
 {
 	constexpr Real mmr = 2;
 	std::mt19937 gen{ _seed };
@@ -57,6 +57,6 @@ Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.1,
 
 int main ()
 {
-	solve (rand_problem (40, 40), { .enableSelectionCuts{false} });
+	solve (rand_problem (100, 100), { .enableSelectionCuts{false} });
 	return 0;
 }

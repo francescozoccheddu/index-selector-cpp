@@ -2,9 +2,47 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <forward_list>
+#include <mutex>
 
 namespace IndexSelector
 {
+
+	class CutCallbackI final : public IloCplex::UserCutCallbackI
+	{
+
+		const VariableMatrix* m_pVariables;
+		const Options* m_pOptions;
+		Solution::Statistics* m_pStatistics;
+
+		struct SelectionIndex
+		{
+			IloBoolVar y;
+			std::forward_list<IloBoolVar> xs;
+		};
+
+		std::forward_list<SelectionIndex> m_selectionIndices;
+		std::mutex m_selectionMutex;
+
+		void add_selection_cuts ();
+
+		void add_size_cuts ();
+
+		void add_optimal_size_cut ();
+
+		void add_heuristic_size_cuts ();
+
+		CutCallbackI (IloEnv _env, const VariableMatrix& _variables, const Options& _options, Solution::Statistics& _statistics);
+		CutCallbackI (const CutCallbackI&);
+
+		friend IloCplex::Callback create_cut_callback (const IloEnv _env, const VariableMatrix& _variables, const Options& _options, Solution::Statistics& _statistics);
+
+	protected:
+
+		void main () override;
+		IloCplex::CallbackI* duplicateCallback () const override;
+
+	};
 
 	IloCplex::CallbackI* CutCallbackI::duplicateCallback () const
 	{
@@ -15,6 +53,7 @@ namespace IndexSelector
 
 	CutCallbackI::CutCallbackI (IloEnv _env, const VariableMatrix& _variables, const Options& _options, Solution::Statistics& _statistics) : IloCplex::UserCutCallbackI{ _env }, m_pVariables{ &_variables }, m_pOptions{ &_options }, m_pStatistics{ &_statistics }
 	{
+		m_pOptions->validate ();
 		if (m_pOptions->enableSelectionCuts)
 		{
 			const size_t ni{ _variables.problem ().nIndices () }, nq{ _variables.problem ().nQueries () };
@@ -44,7 +83,7 @@ namespace IndexSelector
 		{
 			add_selection_cuts ();
 		}
-		if (m_pOptions->enableSizeCuts)
+		if (m_pOptions->sizeCutMode != Options::ESizeCutMode::None)
 		{
 			add_size_cuts ();
 		}
@@ -94,6 +133,28 @@ namespace IndexSelector
 	}
 
 	void CutCallbackI::add_size_cuts ()
+	{
+		std::chrono::steady_clock::time_point startTime = std::chrono::high_resolution_clock::now ();
+		switch (m_pOptions->sizeCutMode)
+		{
+			case Options::ESizeCutMode::Heuristic:
+				add_heuristic_size_cuts ();
+				break;
+			case Options::ESizeCutMode::Optimal:
+				add_optimal_size_cut ();
+				break;
+		}
+		std::chrono::steady_clock::time_point endTime = std::chrono::high_resolution_clock::now ();
+		std::chrono::duration<double> elapsedTime = endTime - startTime;
+		m_pStatistics->sizeCutElapsedTime += elapsedTime.count ();
+	}
+
+	void CutCallbackI::add_optimal_size_cut ()
+	{
+
+	}
+
+	void CutCallbackI::add_heuristic_size_cuts ()
 	{
 
 	}

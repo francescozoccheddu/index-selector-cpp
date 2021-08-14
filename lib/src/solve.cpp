@@ -33,7 +33,7 @@ namespace IndexSelector
 	Solution solve (const IloEnv _env, const Problem& _problem, const Options& _options)
 	{
 		Solution s{};
-		VariableMatrix v{ _env, _problem, _options.prune };
+		VariableMatrix v{ _env, _problem, _options.reduceVariables };
 		IloModel m{ create_model (_env, v) };
 		IloCplex c{ _env };
 		c.extract (m);

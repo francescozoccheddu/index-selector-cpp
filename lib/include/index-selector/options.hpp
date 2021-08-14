@@ -7,10 +7,14 @@ namespace IndexSelector
 	struct Options final
 	{
 
-		bool prune{ true };
+		enum class ESizeCutMode
+		{
+			None, Heuristic, Optimal
+		};
+
+		bool reduceVariables{ true };
 		bool enableSelectionCuts{ true };
-		bool enableSizeCuts{ false };
-		bool enableSizeOptimalCuts{ false };
+		ESizeCutMode sizeCutMode{ ESizeCutMode::None };
 		int heuristicSizeCutsMaxSize{ 10 };
 
 		void validate () const;
