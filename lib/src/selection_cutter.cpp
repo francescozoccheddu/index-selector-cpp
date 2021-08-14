@@ -5,7 +5,6 @@ namespace IndexSelector
 
 	SelectionCutter::SelectionCutter (Cutter::Manager& _manager) : Cutter{ _manager }
 	{
-		std::cout << "Selection cutter created" << std::endl;
 		const size_t ni{ _manager.variables.problem ().nIndices () }, nq{ _manager.variables.problem ().nQueries () };
 		for (size_t i{ 0 }; i < ni; i++)
 		{
@@ -65,18 +64,12 @@ namespace IndexSelector
 
 	SelectionCutter* SelectionCutter::clone () const
 	{
-		std::cout << "Selection cutter cloned" << std::endl;
 		return new SelectionCutter{ *this };
 	}
 
 	IloCplex::Callback SelectionCutter::createAndGetCallback (Cutter::Manager& _manager)
 	{
 		return (new SelectionCutter (_manager))->createCallback (true);
-	}
-
-	SelectionCutter::~SelectionCutter ()
-	{
-		std::cout << "Selection cutter destroyed" << std::endl;
 	}
 
 }

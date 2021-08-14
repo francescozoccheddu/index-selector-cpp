@@ -29,7 +29,6 @@ namespace IndexSelector
 		static IloCplex::Callback createAndGetCallback (Cutter::Manager& _manager);
 
 		SelectionCutter (Cutter::Manager& _manager);
-		~SelectionCutter ();
 
 	};
 

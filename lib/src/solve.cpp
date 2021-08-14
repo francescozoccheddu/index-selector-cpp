@@ -42,12 +42,17 @@ namespace IndexSelector
 		c.setParam (IloCplex::Param::TimeLimit, _options.timeLimit);
 		Cutter::Manager selectionCutManager{ _env, v, _options };
 		Cutter::Manager sizeCutManager{ _env, v, _options };
+		std::vector<IloCplex::Callback> callbacks;
 		if (_options.enableSelectionCuts)
 		{
-			c.use (SelectionCutter::createAndGetCallback (selectionCutManager));
+			callbacks.push_back(c.use (SelectionCutter::createAndGetCallback (selectionCutManager)));
 		}
 		std::chrono::steady_clock::time_point startTime = std::chrono::high_resolution_clock::now ();
 		s.succeeded = c.solve ();
+		for (IloCplex::Callback cb : callbacks)
+		{
+			cb.end ();
+		}
 		std::chrono::steady_clock::time_point endTime = std::chrono::high_resolution_clock::now ();
 		std::chrono::duration<double> elapsedTime = endTime - startTime;
 		s.statistics.nSelectionCuts = selectionCutManager.nCuts ();

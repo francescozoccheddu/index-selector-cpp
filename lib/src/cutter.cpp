@@ -7,7 +7,6 @@ namespace IndexSelector
 
 	Cutter::Callback::Callback (Cutter& _cutter, bool _owner) : IloCplex::UserCutCallbackI{ _cutter.manager.env }, m_cutter{ _cutter }, m_owner{ _owner }
 	{
-		std::cout << "Callback created" << std::endl;
 	}
 
 	void Cutter::Callback::main ()
@@ -19,7 +18,6 @@ namespace IndexSelector
 
 	IloCplex::CallbackI* Cutter::Callback::duplicateCallback () const
 	{
-		std::cout << "Callback cloned" << std::endl;
 		if (m_cutter.manager.options.shareCutters)
 		{
 			return new (getEnv ()) Callback{ m_cutter, false };
@@ -36,7 +34,6 @@ namespace IndexSelector
 		{
 			delete& m_cutter;
 		}
-		std::cout << "Callback destroyed" << std::endl;
 	}
 
 	Real Cutter::Callback::getValue (IloBoolVar _var)
