@@ -16,9 +16,13 @@ namespace IndexSelector
 		{
 			throw std::out_of_range{ "Zero heuristic size cuts max size in heuristic mode" };
 		}
-		if (timeLimit <= 0 or std::isnan (timeLimit) or std::isinf(timeLimit))
+		if (timeLimit <= 0 or !std::isnormal (timeLimit))
 		{
 			throw std::out_of_range{ "Non-positive time limit" };
+		}
+		if (optimalSizeCutTimeLimit <= 0 or !std::isnormal (optimalSizeCutTimeLimit))
+		{
+			throw std::out_of_range{ "Non-positive optimal size cut time limit" };
 		}
 	}
 

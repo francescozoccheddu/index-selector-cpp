@@ -1,7 +1,7 @@
 #include <index-selector/solve.hpp>
 #include <index-selector-lib/variable_matrix.hpp>
 #include <index-selector-lib/model.hpp>
-#include <index-selector-lib/cuts.hpp>
+#include <index-selector-lib/selection_cutter.hpp>
 #include <ilcplex/ilocplex.h>
 #include <format>
 #include <chrono>
@@ -42,7 +42,7 @@ namespace IndexSelector
 #endif 
 		c.setParam (IloCplex::Param::MIP::Strategy::Search, IloCplex::Traditional);
 		c.setParam (IloCplex::Param::TimeLimit, _options.timeLimit);
-		c.use (create_cut_callback (_env, v, _options, s.statistics));
+		//c.use (create_cut_callback (_env, v, _options, s.statistics));
 		std::chrono::steady_clock::time_point startTime = std::chrono::high_resolution_clock::now ();
 		s.succeeded = c.solve ();
 		std::chrono::steady_clock::time_point endTime = std::chrono::high_resolution_clock::now ();
