@@ -17,12 +17,12 @@ namespace IndexSelector
 
 			size_t nNodes{};
 			size_t nVariables{};
-			size_t nOriginalConstraints{};
-			size_t nC1Constraints{};
-			size_t nC2Constraints{};
+			size_t nConstraints{};
+			size_t nSelectionCuts{};
+			size_t nSizeCuts{};
 			double totalElapsedTime{};
-			double C1ElapsedTime{};
-			double C2ElapsedTime{};
+			double selectionCutElapsedTime{};
+			double sizeCutElapsedTime{};
 
 		};
 

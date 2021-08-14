@@ -49,7 +49,7 @@ namespace IndexSelector
 		m_ys = ImmutableArray<std::optional<IloBoolVar>>::take_ownership (ys, ni);
 	}
 
-	const std::optional<IloBoolVar>& VariableMatrix::x (int _i, int _q) const
+	const std::optional<IloBoolVar>& VariableMatrix::x (size_t _i, size_t _q) const
 	{
 		const Problem& p = problem ();
 		if (_i < 0 || _q < 0 || _i >= p.nIndices () || _q >= p.nQueries ())
@@ -59,12 +59,12 @@ namespace IndexSelector
 		return m_xs[_i * p.nQueries () + _q];
 	}
 
-	const std::optional<IloBoolVar>& VariableMatrix::y (int _i) const
+	const std::optional<IloBoolVar>& VariableMatrix::y (size_t _i) const
 	{
 		return m_ys[_i];
 	}
 
-	const IloBoolVar& VariableMatrix::ux (int _i) const
+	const IloBoolVar& VariableMatrix::ux (size_t _i) const
 	{
 		return m_uxs[_i];
 	}

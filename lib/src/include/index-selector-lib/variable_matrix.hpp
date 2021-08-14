@@ -21,9 +21,9 @@ namespace IndexSelector
 
 		VariableMatrix (const IloEnv _env, const Problem& _problem, bool _prune = true);
 
-		const std::optional<IloBoolVar>& x (int _i, int _q) const;
-		const std::optional<IloBoolVar>& y (int _i) const;
-		const IloBoolVar& ux (int _i) const;
+		const std::optional<IloBoolVar>& x (size_t _i, size_t _q) const;
+		const std::optional<IloBoolVar>& y (size_t _i) const;
+		const IloBoolVar& ux (size_t _i) const;
 
 		const Problem& problem () const;
 		size_t nActiveXs () const;
