@@ -4,7 +4,7 @@
 namespace IndexSelector
 {
 
-	IloModel create_model (const IloEnv _env, const VariableMatrix& _variables)
+	IloModel create_model (const IloEnv _env, const VariableMatrix& _variables, Solution::Statistics& _statistics)
 	{
 		const Problem problem{ _variables.problem () };
 		const size_t ni{ problem.nIndices () }, nq{ problem.nQueries () };
@@ -22,6 +22,7 @@ namespace IndexSelector
 				}
 			}
 			model.add (actualSize <= problem.maxSize).setName ("ms");
+			_statistics.nConstraints++;
 			actualSize.end ();
 		}
 		for (size_t q{ 0 }; q < nq; q++)
@@ -38,6 +39,7 @@ namespace IndexSelector
 			name.clear ();
 			std::format_to (std::back_inserter (name), "squ_q{}", q);
 			model.add (nX == 1).setName (name.c_str ());
+			_statistics.nConstraints++;
 			nX.end ();
 		}
 		for (size_t i{ 0 }; i < ni; i++)
@@ -59,6 +61,7 @@ namespace IndexSelector
 				name.clear ();
 				std::format_to (std::back_inserter (name), "miu_i{}", i);
 				model.add (nX <= *y * nActiveX).setName (name.c_str ());
+				_statistics.nConstraints++;
 				nX.end ();
 			}
 		}

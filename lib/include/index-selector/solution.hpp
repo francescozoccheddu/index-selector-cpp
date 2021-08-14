@@ -26,8 +26,9 @@ namespace IndexSelector
 
 		};
 
-		ImmutableArray<int> enabledIndices{};
-		ImmutableArray<int> bestIndexPerQuery{};
+		ImmutableArray<size_t> enabledIndices{};
+		ImmutableArray<size_t> bestIndexPerQuery{};
+		bool succeeded{};
 		Real totalCost{};
 		Problem problem{};
 		Options options{};

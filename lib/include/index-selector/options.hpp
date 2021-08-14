@@ -1,6 +1,8 @@
 #ifndef INCLUDED_INDEX_SELECTOR_OPTIONS
 #define INCLUDED_INDEX_SELECTOR_OPTIONS
 
+#include <limits>
+
 namespace IndexSelector
 {
 
@@ -12,6 +14,7 @@ namespace IndexSelector
 			None, Heuristic, Optimal
 		};
 
+		double timeLimit{ 1e+75 };
 		bool reduceVariables{ true };
 		bool enableSelectionCuts{ true };
 		ESizeCutMode sizeCutMode{ ESizeCutMode::None };

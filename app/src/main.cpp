@@ -57,6 +57,6 @@ Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.2,
 
 int main ()
 {
-	solve (rand_problem (100, 100), { .enableSelectionCuts{false} });
+	Solution s = solve (rand_problem (100, 100), { .enableSelectionCuts{false} });
 	return 0;
 }

@@ -22,8 +22,6 @@ namespace IndexSelector
 		requires std::convertible_to<TConvertible, TValue>
 			static  TValue* copy (const TConvertible* _pData, size_t _nData);
 
-		ImmutableArray (TValue* _pData, size_t _nData);
-
 	public:
 
 		class Iterator

@@ -3,11 +3,12 @@
 
 #include <ilcplex/ilocplex.h>
 #include <index-selector-lib/variable_matrix.hpp>
+#include <index-selector/solution.hpp>
 
 namespace IndexSelector
 {
 
-	IloModel create_model (const IloEnv _env, const VariableMatrix& _variables);
+	IloModel create_model (const IloEnv _env, const VariableMatrix& _variables, Solution::Statistics& _statistics);
 
 }
 

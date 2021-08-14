@@ -19,7 +19,7 @@ namespace IndexSelector
 
 	public:
 
-		VariableMatrix (const IloEnv _env, const Problem& _problem, bool _prune = true);
+		VariableMatrix (const IloEnv _env, const Problem& _problem, bool _reduceVariables = true);
 
 		const std::optional<IloBoolVar>& x (size_t _i, size_t _q) const;
 		const std::optional<IloBoolVar>& y (size_t _i) const;
