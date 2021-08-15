@@ -15,15 +15,15 @@ namespace IndexSelector
 		const int nZs{ static_cast<int>(_manager.variables.nActiveYs ()) };
 		m_zs = IloBoolVarArray{ _manager.env, nZs };
 		m_vys = IloNumArray{ _manager.env, nZs };
-		size_t ai{ 0 };
-		for (size_t i{ 0 }; i < _manager.variables.nActiveYs (); i++)
+		size_t ai{ 0 }, i{ 0 };
+		while (ai < manager.variables.nActiveYs ())
 		{
 			const std::optional<IloBoolVar>& y{ _manager.variables.y (i) };
 			if (y)
 			{
-				m_vys[ai] = _manager.variables.problem ().indices[i].size;
-				ai++;
+				m_vys[ai++] = _manager.variables.problem ().indices[i].size;
 			}
+			i++;
 		}
 		m.add (IloScalProd (m_zs, m_vys) >= std::nextafter (_manager.variables.problem ().maxSize, _manager.variables.problem ().maxSize + 1));
 		m_cplex.extract (m);
@@ -37,14 +37,15 @@ namespace IndexSelector
 			return;
 		}
 		_callback.lockIfShared ();
-		size_t ai{ 0 };
-		for (size_t i{ 0 }; i < manager.variables.nActiveYs (); i++)
 		{
-			const std::optional<IloBoolVar>& y{ manager.variables.y (i) };
-			if (y)
+			size_t ai{ 0 }, i{ 0 };
+			while (ai < manager.variables.nActiveYs ())
 			{
-				m_vys[ai] = 1.0 - _callback.getValue (*y);
-				ai++;
+				const std::optional<IloBoolVar>& y{ manager.variables.y (i++) };
+				if (y)
+				{
+					m_vys[ai++] = 1.0 - _callback.getValue (*y);
+				}
 			}
 		}
 		IloExtractable obj{ m_cplex.getModel ().add (IloMinimize (manager.env, IloScalProd (m_zs, m_vys))) };
@@ -52,13 +53,18 @@ namespace IndexSelector
 		{
 			IloExpr sum{ manager.env };
 			int count{};
-			for (size_t i{ 0 }; i < manager.variables.nActiveYs (); i++)
+			size_t ai{ 0 }, i{ 0 };
+			while (ai < manager.variables.nActiveYs ())
 			{
-				const std::optional<IloBoolVar>& y{ manager.variables.y (i) };
-				if (y && m_cplex.getValue (*y))
+				const std::optional<IloBoolVar>& y{ manager.variables.y (i++) };
+				if (y)
 				{
-					sum += *y;
-					count++;
+					ai++;
+					if (_callback.getValue (*y))
+					{
+						sum += *y;
+						count++;
+					}
 				}
 			}
 			_callback.add (sum <= count - 1);

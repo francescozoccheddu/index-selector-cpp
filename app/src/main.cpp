@@ -19,7 +19,7 @@ Problem eb_problem ()
 	};
 }
 
-Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.1, Real _fixedCostRatio = 0.1, Real _maxMinRatio = 5, Real _unindexedIndexedRatio = 2, unsigned int _seed = 0)
+Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 4, Real _fixedCostRatio = 0.1, Real _maxMinRatio = 5, Real _unindexedIndexedRatio = 1.5, unsigned int _seed = 0)
 {
 	std::mt19937 gen{ _seed };
 	std::uniform_real_distribution r = std::uniform_real_distribution<Real>{ 1, _maxMinRatio };
@@ -34,7 +34,6 @@ Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.1,
 	}
 	{
 		Index* const idxs = new Index[_nIndices];
-		Real totalSize{};
 		for (int i{ 0 }; i < _nIndices; i++)
 		{
 			Index& index = idxs[i];
@@ -46,17 +45,17 @@ Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 0.1,
 			index.queryCosts = ImmutableArray<Real>::take_ownership (cs, _nQueries);
 			index.fixedCost = r (gen) * _fixedCostRatio;
 			index.size = r (gen);
-			totalSize += index.size;
 		}
 		problem.indices = ImmutableArray<Index>::take_ownership (idxs, _nIndices);
-		problem.maxSize = totalSize * _sizeRatio;
+		problem.maxSize = _maxMinRatio * _sizeRatio / 2.0;
 	}
 	return problem;
 }
 
 int main ()
 {
-	const Solution s = solve (rand_problem (120, 80, 0.02), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
+	const Solution s = solve (rand_problem (120, 80), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
+	//const Solution s = solve (eb_problem(), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
 	std::cout << std::endl << s.totalCost << " in " << s.statistics.totalElapsedTime << "s" << std::endl;
 	return 0;
 }
