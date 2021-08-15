@@ -7,7 +7,7 @@
 #include <format>
 #include <chrono>
 
-#define INDEX_SELECTOR_DISABLE_HEURISTICS
+#define INDEX_SELECTOR_AS_BOOK
 
 namespace IndexSelector
 {
@@ -45,8 +45,24 @@ namespace IndexSelector
 #endif
 		c.setParam (IloCplex::Param::MIP::Strategy::Search, IloCplex::Traditional);
 		c.setParam (IloCplex::Param::TimeLimit, _options.timeLimit);
-#ifdef INDEX_SELECTOR_DISABLE_HEURISTICS
-		c.setParam (IloCplex::Param::MIP::Strategy::HeuristicEffort, 0);
+#ifdef INDEX_SELECTOR_AS_BOOK
+		c.setParam (IloCplex::Param::MIP::Cuts::BQP, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::Cliques, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::Covers, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::Disjunctive, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::FlowCovers, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::Gomory, 0);
+		c.setParam (IloCplex::Param::MIP::Cuts::GUBCovers, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::Implied, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::LiftProj, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::LocalImplied, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::MCFCut, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::MIRCut, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::Nodecuts, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::PathCut, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::RLT, -1);
+		c.setParam (IloCplex::Param::MIP::Cuts::ZeroHalfCut, -1);
+		c.setParam (IloCplex::Param::NodeAlgorithm, IloCplex::Algorithm::Primal);
 #endif
 		c.extract (m);
 		Cutter::Manager selectionCutManager{ _env, v, _options };
