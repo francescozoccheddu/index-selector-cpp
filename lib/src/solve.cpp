@@ -3,6 +3,7 @@
 #include <index-selector-lib/model.hpp>
 #include <index-selector-lib/selection_cutter.hpp>
 #include <index-selector-lib/optimal_size_cutter.hpp>
+#include <index-selector-lib/heuristic_size_cutter.hpp>
 #include <ilcplex/ilocplex.h>
 #include <format>
 #include <chrono>
@@ -51,7 +52,7 @@ namespace IndexSelector
 		c.setParam (IloCplex::Param::MIP::Cuts::Covers, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::Disjunctive, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::FlowCovers, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::Gomory, 0);
+		c.setParam (IloCplex::Param::MIP::Cuts::Gomory, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::GUBCovers, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::Implied, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::LiftProj, -1);
@@ -62,7 +63,14 @@ namespace IndexSelector
 		c.setParam (IloCplex::Param::MIP::Cuts::PathCut, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::RLT, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::ZeroHalfCut, -1);
+		c.setParam (IloCplex::Param::MIP::Limits::CutsFactor, 0.0);
+		c.setParam (IloCplex::Param::MIP::Limits::CutPasses, -1);
+		c.setParam (IloCplex::Param::MIP::Strategy::HeuristicEffort, 0);
+		c.setParam (IloCplex::Param::RootAlgorithm, IloCplex::Algorithm::Primal);
+		c.setParam (IloCplex::Param::MIP::SubMIP::StartAlg, IloCplex::Algorithm::Primal);
+		c.setParam (IloCplex::Param::MIP::SubMIP::SubAlg, IloCplex::Algorithm::Primal);
 		c.setParam (IloCplex::Param::NodeAlgorithm, IloCplex::Algorithm::Primal);
+		c.setParam (IloCplex::Param::Preprocessing::Presolve, false);
 #endif
 		c.extract (m);
 		Cutter::Manager selectionCutManager{ _env, v, _options };
@@ -76,6 +84,9 @@ namespace IndexSelector
 		{
 			case Options::ESizeCutMode::Optimal:
 				callbacks.push_back (c.use (OptimalSizeCutter::createAndGetCallback (sizeCutManager)));
+				break;
+			case Options::ESizeCutMode::Heuristic:
+				callbacks.push_back (c.use (HeuristicSizeCutter::createAndGetCallback (sizeCutManager)));
 				break;
 		}
 		std::chrono::steady_clock::time_point startTime = std::chrono::high_resolution_clock::now ();
@@ -98,7 +109,7 @@ namespace IndexSelector
 		if (s.succeeded)
 		{
 			const size_t ni{ _problem.nIndices () }, nq{ _problem.nQueries () };
-			s.totalCost = static_cast<Real>(c.getObjValue ());
+			s.cost = static_cast<Real>(c.getObjValue ());
 			{
 				size_t* const pIXs = new size_t[nq];
 				for (size_t q{ 0 }; q < nq; q++)

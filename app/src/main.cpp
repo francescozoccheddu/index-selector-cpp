@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include <iomanip>
 #include <random>
 #include <index-selector/solve.hpp>
 
@@ -93,10 +94,23 @@ Problem rand_problem (size_t _nIndices, size_t _nQueries, Real _sizeRatio = 4, R
 	return problem;
 }
 
+template<typename TValue>
+void print (const char* _pName, const TValue _value)
+{
+	std::cout << std::setw (10) << _pName << ": " << _value << std::endl;
+}
+
 int main ()
 {
-	//const Solution s = solve (rand_problem (40, 30), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::None} });
-	const Solution s = solve (eb_problem(), { .shareCutters{false}, .enableSelectionCuts{true}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
-	std::cout << std::endl << s.totalCost << " in " << s.statistics.totalElapsedTime << "s and " << s.statistics.nNodes << " nodes" << std::endl;
+	const Solution s = solve (rand_problem (30, 20, 1), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
+	//const Solution s = solve (eb_problem (), { .shareCutters{false}, .enableSelectionCuts{true}, .sizeCutMode{Options::ESizeCutMode::None} });
+	print ("Cost", s.cost);
+	print ("Time", s.statistics.totalElapsedTime);
+	print ("Nodes", s.statistics.nNodes);
+	print ("Variables", s.statistics.nVariables);
+	print ("C1 cuts", s.statistics.nSelectionCuts);
+	print ("C2 cuts", s.statistics.nSizeCuts);
+	print ("C1 time", s.statistics.selectionCutElapsedTime);
+	print ("C2 time", s.statistics.sizeCutElapsedTime);
 	return 0;
 }
