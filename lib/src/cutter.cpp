@@ -5,7 +5,7 @@
 namespace IndexSelector
 {
 
-	Cutter::Callback::Callback (Cutter& _cutter, bool _owner) : IloCplex::UserCutCallbackI{ _cutter.manager.env }, m_cutter{ _cutter }, m_owner{ _owner }
+	Cutter::Callback::Callback (Cutter& _cutter, bool _owner, bool _shared) : IloCplex::UserCutCallbackI{ _cutter.manager.env }, m_cutter{ _cutter }, m_owner{ _owner }, m_shared {_shared}
 	{
 	}
 
@@ -18,13 +18,13 @@ namespace IndexSelector
 
 	IloCplex::CallbackI* Cutter::Callback::duplicateCallback () const
 	{
-		if (m_cutter.manager.options.shareCutters)
+		if (m_shared)
 		{
-			return new (getEnv ()) Callback{ m_cutter, false };
+			return new (getEnv ()) Callback{ m_cutter, false, true };
 		}
 		else
 		{
-			return new (getEnv ()) Callback{ *m_cutter.clone (), true };
+			return new (getEnv ()) Callback{ *m_cutter.clone (), true, false };
 		}
 	}
 
@@ -65,7 +65,7 @@ namespace IndexSelector
 
 	void Cutter::Callback::lockIfShared ()
 	{
-		if (m_cutter.manager.options.shareCutters)
+		if (m_shared)
 		{
 			lock ();
 		}
@@ -73,7 +73,7 @@ namespace IndexSelector
 
 	void Cutter::Callback::unlockIfShared ()
 	{
-		if (m_cutter.manager.options.shareCutters)
+		if (m_shared)
 		{
 			unlock ();
 		}
@@ -87,9 +87,14 @@ namespace IndexSelector
 		throw std::logic_error ("Cutter must be shared since it does not implement clone()");
 	}
 
+	bool Cutter::shouldShare () const
+	{
+		return manager.options.shareCutters;
+	}
+
 	IloCplex::Callback Cutter::createCallback (bool _own)
 	{
-		return IloCplex::Callback{ new (manager.env) Callback {*this, _own} };
+		return IloCplex::Callback{ new (manager.env) Callback {*this, _own, shouldShare() } };
 	}
 
 	void Cutter::Manager::addCut ()
@@ -132,7 +137,10 @@ namespace IndexSelector
 		m_dataMutex.unlock ();
 	}
 
-	Cutter::Manager::Manager (IloEnv _env, const VariableMatrix& _variables, const Options& _options) : env{ _env }, variables{ _variables }, options{ _options } {}
+	Cutter::Manager::Manager (IloEnv _env, const VariableMatrix& _variables, const Options& _options) : env{ _env }, variables{ _variables }, options{ _options }
+	{
+		options.validate ();
+	}
 
 	size_t Cutter::Manager::nCuts () const
 	{
@@ -146,6 +154,6 @@ namespace IndexSelector
 #else
 		return 0;
 #endif
-	}
+}
 
 }

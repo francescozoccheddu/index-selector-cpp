@@ -8,14 +8,14 @@ using namespace IndexSelector;
 Problem eb_problem ()
 {
 	return Problem{
-		.maxSize{19},
+		.maxSize{40},
 		.unindexedQueryCosts{ 6200,2000,800,6700,5000,2000 },
 		.indices{
 			Index{.size {10}, .fixedCost{200}, .queryCosts{1300, 900, 800, 6700, 5000, 2000}},
 			Index{.size {5}, .fixedCost{1200}, .queryCosts{6200, 700, 800, 6700, 5000, 2000}},
 			Index{.size {10}, .fixedCost{400}, .queryCosts{6200, 2000, 800, 1700, 2200, 2000}},
 			Index{.size {8}, .fixedCost{2400}, .queryCosts{6200, 2000, 800, 6700, 1200, 2000}},
-			Index{.size {8}, .fixedCost{250}, .queryCosts{6200, 2000, 800, 2700, 4200, 750}}
+			Index{.size {6}, .fixedCost{250}, .queryCosts{6200, 2000, 800, 2700, 4200, 750}}
 		}
 	};
 }
@@ -102,8 +102,8 @@ void print (const char* _pName, const TValue _value)
 
 int main ()
 {
-	const Solution s = solve (rand_problem (30, 20, 1), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
-	//const Solution s = solve (eb_problem (), { .shareCutters{false}, .enableSelectionCuts{true}, .sizeCutMode{Options::ESizeCutMode::None} });
+	const Solution s = solve (rand_problem (30, 20, 1), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
+	//const Solution s = solve (eb_problem (), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
 	print ("Cost", s.cost);
 	print ("Time", s.statistics.totalElapsedTime);
 	print ("Nodes", s.statistics.nNodes);

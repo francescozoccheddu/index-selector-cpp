@@ -1,13 +1,17 @@
 #include <index-selector-lib/optimal_size_cutter.hpp>
 #include <limits>
 #include <cmath>
-#include <format>
+#include <stdexcept>
 
 namespace IndexSelector
 {
 
 	OptimalSizeCutter::OptimalSizeCutter (Cutter::Manager& _manager) : SimpleCutter{ _manager }
 	{
+		if (manager.options.sizeCutMode != Options::ESizeCutMode::Optimal)
+		{
+			throw std::logic_error{ "optimal size cuts are disabled in options" };
+		}
 		IloModel m{ _manager.env, "Optimal size cut submodel" };
 		m_cplex = IloCplex{ _manager.env };
 		m_cplex.setOut (_manager.env.getNullStream ());
@@ -32,10 +36,6 @@ namespace IndexSelector
 
 	void OptimalSizeCutter::cut (Callback& _callback)
 	{
-		if (manager.options.sizeCutMode != Options::ESizeCutMode::Optimal)
-		{
-			return;
-		}
 		_callback.lockIfShared ();
 		{
 			size_t ai{ 0 }, i{ 0 };

@@ -8,13 +8,9 @@ namespace IndexSelector
 
 	void Options::validate () const
 	{
-		if (heuristicSizeCutsMaxSize < 0)
+		if (heuristicSizeCutsMaxSize < 2)
 		{
-			throw std::out_of_range{ "Negative heuristic size cuts max size" };
-		}
-		if (heuristicSizeCutsMaxSize == 0 and sizeCutMode == ESizeCutMode::Heuristic)
-		{
-			throw std::out_of_range{ "Zero heuristic size cuts max size in heuristic mode" };
+			throw std::out_of_range{ "heuristic size cuts max size must be greater than 1" };
 		}
 		if (timeLimit <= 0 or !std::isnormal (timeLimit))
 		{

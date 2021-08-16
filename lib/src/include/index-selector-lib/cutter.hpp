@@ -24,10 +24,13 @@ namespace IndexSelector
 
 			friend class Cutter;
 
-			Callback (Cutter& _cutter, bool _owner);
+			Callback (const Callback&) = delete;
+			Callback (Callback&&) = delete;
+			Callback (Cutter& _cutter, bool _owner, bool _shared);
 
 			Cutter& m_cutter;
 			const bool m_owner;
+			const bool m_shared;
 
 		protected:
 
@@ -50,6 +53,7 @@ namespace IndexSelector
 
 		virtual void cut (Callback& _callback) = 0;
 		virtual Cutter* clone () const;
+		virtual bool shouldShare () const;
 
 	public:
 
