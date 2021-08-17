@@ -66,7 +66,7 @@ namespace IndexSelector
 		{
 			m_valueSortedCandidates = std::vector<Candidate*> (m_candidates.size ());
 			m_kCandidates = std::vector<Candidate*> (m_candidates.size ());
-			m_chosen = std::vector<Candidate*> (m_maxK);
+			m_chosen = std::vector<size_t> (m_maxK);
 		}
 		else
 		{
@@ -75,9 +75,70 @@ namespace IndexSelector
 		}
 	}
 
-	void HeuristicSizeCutter::addKCuts (Callback& _callback, size_t _k)
+	void HeuristicSizeCutter::choose (Callback& _callback, size_t _k)
 	{
+		const size_t nc{ m_kCandidates.size () };
+		m_chosen.clear ();
+		for (size_t i{ _k }; i > 0; i--)
+		{
+			m_chosen.push_back (i - 1);
+		}
+		while (true)
+		{
+			if (!pushChosen (_callback))
+			{
+				for (size_t i{ 0 }; i < _k; i++)
+				{
+					const size_t mi = (i == _k - 1) ? 0 : (m_chosen[i + 1] + 1);
+					if (m_chosen[i] != mi)
+					{
+						m_chosen[i] = nc;
+						break;
+					}
+				}
+			}
+			size_t i;
+			for (i = 0; i < _k; i++)
+			{
+				if (m_chosen[i] < nc - i - 1)
+				{
+					m_chosen[i] ++;
+					while (i-- > 0)
+					{
+						m_chosen[i] = m_chosen[i + 1] + 1;
+					}
+					break;
+				}
+			}
+			if (i == _k)
+			{
+				break;
+			}
+		}
+	}
 
+	bool HeuristicSizeCutter::pushChosen (Callback& _callback) const
+	{
+		Real size{};
+		for (size_t c{ 0 }; c < m_chosen.size (); c++)
+		{
+			size += m_kCandidates[c]->size;
+		}
+		if (size > manager.variables.problem ().maxSize)
+		{
+			IloExpr sum{ manager.env };
+			for (size_t c{ 0 }; c < m_chosen.size (); c++)
+			{
+				if (m_chosen[c])
+				{
+					sum += m_kCandidates[c]->y;
+				}
+			}
+			_callback.add (sum <= static_cast<int>(m_chosen.size () - 1));
+			sum.end ();
+			return true;
+		}
+		return false;
 	}
 
 	void HeuristicSizeCutter::cut (Callback& _callback)
@@ -100,12 +161,12 @@ namespace IndexSelector
 		{
 			std::sort (m_valueSortedCandidates.begin (), m_valueSortedCandidates.end (), [] (const Candidate* _a, const Candidate* _b)
 			{
-				return _a->value > _b->size;
+				return _a->value > _b->value;
 			});
 			for (size_t k{ m_minK }; k <= m_maxK; k++)
 			{
 				m_kCandidates.clear ();
-				Real topSum{};
+				Real topSum{}, value{}, size{};
 				for (Candidate* c : m_valueSortedCandidates)
 				{
 					if (m_kCandidates.size () >= k - 1 and c->value < (topSum - k + 1))
@@ -118,10 +179,22 @@ namespace IndexSelector
 						{
 							topSum += c->value;
 						}
+						if (m_kCandidates.size () < k)
+						{
+							value += c->value;
+							if (m_candidates.size () == k - 1 and value <= k - 1)
+							{
+								break;
+							}
+						}
+						size += c->size;
 						m_kCandidates.push_back (c);
 					}
 				}
-				addKCuts (_callback, k);
+				if (value > k - 1 and size > manager.variables.problem ().maxSize and m_kCandidates.size () >= k)
+				{
+					choose (_callback, k);
+				}
 			}
 		}
 		_callback.unlockIfShared ();

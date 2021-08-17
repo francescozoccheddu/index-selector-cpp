@@ -24,9 +24,10 @@ namespace IndexSelector
 		size_t m_minK{}, m_maxK{};
 		std::vector<Candidate*> m_valueSortedCandidates;
 		std::vector<Candidate*> m_kCandidates;
-		std::vector<Candidate*> m_chosen;
+		std::vector<size_t> m_chosen;
 
-		void addKCuts (Callback& _callback, size_t _k);
+		void choose (Callback& _callback, size_t _k);
+		bool pushChosen (Callback& _callback) const;
 
 	protected:
 

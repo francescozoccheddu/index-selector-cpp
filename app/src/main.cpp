@@ -8,7 +8,7 @@ using namespace IndexSelector;
 Problem eb_problem ()
 {
 	return Problem{
-		.maxSize{40},
+		.maxSize{19},
 		.unindexedQueryCosts{ 6200,2000,800,6700,5000,2000 },
 		.indices{
 			Index{.size {10}, .fixedCost{200}, .queryCosts{1300, 900, 800, 6700, 5000, 2000}},
@@ -23,7 +23,7 @@ Problem eb_problem ()
 Problem m1_problem ()
 {
 	return Problem{
-		.maxSize{60},
+		.maxSize{19},
 		.unindexedQueryCosts{ 6200, 2000, 800, 6700, 5000, 2000, 3000, 5000, 600, 1200, 6000, 2000, 1400, 2000, 4000, 5400, 1000, 900, 7000, 3000 },
 		.indices{
 			Index{.size {10}, .fixedCost{100}, .queryCosts{4200, 2000, 1000, 5000, 5000, 1000, 3000, 5000, 600, 1000, 6000, 2000, 1500, 2000, 4000, 5400, 1000, 900, 7000, 3000}},
@@ -102,7 +102,7 @@ void print (const char* _pName, const TValue _value)
 
 int main ()
 {
-	const Solution s = solve (rand_problem (30, 20, 1), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
+	const Solution s = solve (rand_problem (20, 10, 10), { .shareCutters{false}, .enableSelectionCuts{true}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
 	//const Solution s = solve (eb_problem (), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
 	print ("Cost", s.cost);
 	print ("Time", s.statistics.totalElapsedTime);

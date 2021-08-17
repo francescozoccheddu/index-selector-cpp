@@ -59,12 +59,12 @@ namespace IndexSelector
 				const std::optional<IloBoolVar>& y{ manager.variables.y (i++) };
 				if (y)
 				{
-					ai++;
-					if (_callback.getValue (*y))
+					if (m_cplex.getValue (m_zs[ai]))
 					{
 						sum += *y;
 						count++;
 					}
+					ai++;
 				}
 			}
 			_callback.add (sum <= count - 1);
