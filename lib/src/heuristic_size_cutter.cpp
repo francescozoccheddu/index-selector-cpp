@@ -96,7 +96,7 @@ namespace IndexSelector
 				for (size_t i{ 0 }; i < _k; i++)
 				{
 					const size_t mi = (i == _k - 1) ? 0 : (m_chosen[i + 1] + 1);
-					bool stop{ m_chosen[i] != mi };
+					bool stop{ m_chosen[i] <= mi + 1 };
 					m_chosen[i] = nc;
 					if (stop)
 					{

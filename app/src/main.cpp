@@ -102,7 +102,7 @@ void print (const char* _pName, const TValue _value)
 
 int main ()
 {
-	const Solution s = solve (rand_problem (40, 20, 10), { .enableSelectionCuts{true}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
+	const Solution s = solve (rand_problem (60, 40, 5), { .enableSelectionCuts{true}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
 	//const Solution s = solve (m1_problem (), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
 	print ("Cost", s.cost);
 	print ("Time", s.statistics.totalElapsedTime);
