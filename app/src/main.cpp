@@ -102,8 +102,8 @@ void print (const char* _pName, const TValue _value)
 
 int main ()
 {
-	const Solution s = solve (rand_problem (20, 10, 10), { .shareCutters{false}, .enableSelectionCuts{true}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
-	//const Solution s = solve (eb_problem (), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
+	const Solution s = solve (rand_problem (40, 20, 10), { .shareCutters{false}, .enableSelectionCuts{true}, .sizeCutMode{Options::ESizeCutMode::Optimal} });
+	//const Solution s = solve (m1_problem (), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
 	print ("Cost", s.cost);
 	print ("Time", s.statistics.totalElapsedTime);
 	print ("Nodes", s.statistics.nNodes);

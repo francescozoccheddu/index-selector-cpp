@@ -5,9 +5,8 @@
 namespace IndexSelector
 {
 
-	Cutter::Callback::Callback (Cutter& _cutter, bool _owner, bool _shared) : IloCplex::UserCutCallbackI{ _cutter.manager.env }, m_cutter{ _cutter }, m_owner{ _owner }, m_shared {_shared}
-	{
-	}
+	Cutter::Callback::Callback (Cutter& _cutter, bool _owner, bool _shared) : IloCplex::UserCutCallbackI{ _cutter.manager.env }, m_cutter{ _cutter }, m_owner{ _owner }, m_shared{ _shared }
+	{}
 
 	void Cutter::Callback::main ()
 	{
@@ -94,7 +93,7 @@ namespace IndexSelector
 
 	IloCplex::Callback Cutter::createCallback (bool _own)
 	{
-		return IloCplex::Callback{ new (manager.env) Callback {*this, _own, shouldShare() } };
+		return IloCplex::Callback{ new (manager.env) Callback {*this, _own, shouldShare () } };
 	}
 
 	void Cutter::Manager::addCut ()
@@ -154,6 +153,6 @@ namespace IndexSelector
 #else
 		return 0;
 #endif
-}
+	}
 
 }

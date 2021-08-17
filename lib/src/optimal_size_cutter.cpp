@@ -48,7 +48,7 @@ namespace IndexSelector
 				}
 			}
 		}
-		IloExtractable obj{ m_cplex.getModel ().add (IloMinimize (manager.env, IloScalProd (m_zs, m_vys))) };
+		m_cplex.getModel ().add (IloMinimize (manager.env, IloScalProd (m_zs, m_vys)));
 		if (m_cplex.solve () && m_cplex.getObjValue () < 1)
 		{
 			IloExpr sum{ manager.env };
@@ -70,7 +70,7 @@ namespace IndexSelector
 			_callback.add (sum <= count - 1);
 			sum.end ();
 		}
-		obj.end ();
+		m_cplex.getObjective ().end ();
 		_callback.unlockIfShared ();
 	}
 

@@ -25,6 +25,12 @@ namespace IndexSelector
 		{
 			solution = solve (env, _problem, _options);
 		}
+		catch (IloException& _e)
+		{
+			env.end ();
+			std::cout << _e.getMessage () << std::endl; // TODO Remove
+			throw;
+		}
 		catch (...)
 		{
 			env.end ();
@@ -78,15 +84,15 @@ namespace IndexSelector
 		std::vector<IloCplex::Callback> callbacks;
 		if (_options.enableSelectionCuts)
 		{
-			callbacks.push_back (c.use (SelectionCutter::createAndGetCallback (selectionCutManager)));
+			callbacks.push_back (c.add (SelectionCutter::createAndGetCallback (selectionCutManager)));
 		}
 		switch (_options.sizeCutMode)
 		{
 			case Options::ESizeCutMode::Optimal:
-				callbacks.push_back (c.use (OptimalSizeCutter::createAndGetCallback (sizeCutManager)));
+				callbacks.push_back (c.add (OptimalSizeCutter::createAndGetCallback (sizeCutManager)));
 				break;
 			case Options::ESizeCutMode::Heuristic:
-				callbacks.push_back (c.use (HeuristicSizeCutter::createAndGetCallback (sizeCutManager)));
+				callbacks.push_back (c.add (HeuristicSizeCutter::createAndGetCallback (sizeCutManager)));
 				break;
 		}
 		std::chrono::steady_clock::time_point startTime = std::chrono::high_resolution_clock::now ();

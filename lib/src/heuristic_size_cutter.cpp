@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 
+
 namespace IndexSelector
 {
 
@@ -21,17 +22,17 @@ namespace IndexSelector
 				const std::optional<IloBoolVar>& y{ manager.variables.y (i) };
 				if (y)
 				{
-					m_candidates[ai++] = Candidate{ .size {_manager.variables.problem ().indices[i].size }, .y{ *y }, .minK{0} };
+					m_candidates[ai++] = Candidate{ .size {_manager.variables.problem ().indices[i].size }, .y{ *y } };
 				}
 				i++;
 			}
-			std::sort (m_candidates.begin (), m_candidates.end (), [] (const Candidate& _a, const Candidate& _b)
-			{
-				return _a.size > _b.size;
-			});
 		}
 		m_maxK = std::min<size_t> (_manager.options.heuristicSizeCutsMaxSize, nAy);
-		std::vector<size_t> nCandidates (std::max<size_t> (m_maxK - 1, 0));
+#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
+		std::sort (m_candidates.begin (), m_candidates.end (), [] (const Candidate& _a, const Candidate& _b)
+		{
+			return _a.size > _b.size;
+		});
 		Real topSum{}, kSum{};
 		size_t ai{}, sai{};
 		const Real maxSize{ _manager.variables.problem ().maxSize };
@@ -62,6 +63,9 @@ namespace IndexSelector
 				}
 			}
 		}
+#else
+		m_minK = 2;
+#endif
 		if (m_minK)
 		{
 			m_valueSortedCandidates = std::vector<Candidate*> (m_candidates.size ());
@@ -87,15 +91,18 @@ namespace IndexSelector
 		{
 			if (!pushChosen (_callback))
 			{
+#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 				for (size_t i{ 0 }; i < _k; i++)
 				{
 					const size_t mi = (i == _k - 1) ? 0 : (m_chosen[i + 1] + 1);
-					if (m_chosen[i] != mi)
+					bool stop{ m_chosen[i] != mi };
+					m_chosen[i] = nc;
+					if (stop)
 					{
-						m_chosen[i] = nc;
 						break;
 					}
 				}
+#endif
 			}
 			size_t i;
 			for (i = 0; i < _k; i++)
@@ -119,26 +126,27 @@ namespace IndexSelector
 
 	bool HeuristicSizeCutter::pushChosen (Callback& _callback) const
 	{
-		Real size{};
+		Real size{}, value{};
 		for (size_t c{ 0 }; c < m_chosen.size (); c++)
 		{
-			size += m_kCandidates[c]->size;
+			value += m_kCandidates[m_chosen[c]]->value;
+			size += m_kCandidates[m_chosen[c]]->size;
+		}
+		if (value <= m_chosen.size () - 1)
+		{
+			return false;
 		}
 		if (size > manager.variables.problem ().maxSize)
 		{
 			IloExpr sum{ manager.env };
 			for (size_t c{ 0 }; c < m_chosen.size (); c++)
 			{
-				if (m_chosen[c])
-				{
-					sum += m_kCandidates[c]->y;
-				}
+				sum += m_kCandidates[m_chosen[c]]->y;
 			}
 			_callback.add (sum <= static_cast<int>(m_chosen.size () - 1));
 			sum.end ();
-			return true;
 		}
-		return false;
+		return true;
 	}
 
 	void HeuristicSizeCutter::cut (Callback& _callback)
@@ -159,16 +167,21 @@ namespace IndexSelector
 		}
 		if (!m_valueSortedCandidates.empty ())
 		{
+#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 			std::sort (m_valueSortedCandidates.begin (), m_valueSortedCandidates.end (), [] (const Candidate* _a, const Candidate* _b)
 			{
 				return _a->value > _b->value;
 			});
+#endif
 			for (size_t k{ m_minK }; k <= m_maxK; k++)
 			{
 				m_kCandidates.clear ();
+#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 				Real topSum{}, value{}, size{};
+#endif
 				for (Candidate* c : m_valueSortedCandidates)
 				{
+#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 					if (m_kCandidates.size () >= k - 1 and c->value < (topSum - k + 1))
 					{
 						break;
@@ -188,21 +201,28 @@ namespace IndexSelector
 							}
 						}
 						size += c->size;
+#endif
 						m_kCandidates.push_back (c);
+#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 					}
+#endif
 				}
+#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 				if (value > k - 1 and size > manager.variables.problem ().maxSize and m_kCandidates.size () >= k)
+#else
+				if (m_kCandidates.size () >= k)
+#endif
 				{
 					choose (_callback, k);
-				}
 			}
 		}
-		_callback.unlockIfShared ();
 	}
+		_callback.unlockIfShared ();
+}
 
 	bool HeuristicSizeCutter::shouldShare () const
 	{
 		return false;
 	}
 
-}
+	}
