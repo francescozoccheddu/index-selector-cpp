@@ -116,7 +116,7 @@ namespace IndexSelector
 			throw std::invalid_argument{ "Negative size" };
 		}
 	}
-	
+
 	template<typename TValue>
 	ImmutableArray<TValue> ImmutableArray<TValue>::take_ownership (TValue* _pData, size_t _nData)
 	{

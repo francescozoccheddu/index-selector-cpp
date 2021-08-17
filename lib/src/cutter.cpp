@@ -88,7 +88,7 @@ namespace IndexSelector
 
 	bool Cutter::shouldShare () const
 	{
-		return manager.options.shareCutters;
+		return false;
 	}
 
 	IloCplex::Callback Cutter::createCallback (bool _own)
@@ -103,7 +103,7 @@ namespace IndexSelector
 
 	void Cutter::Manager::startCutter ()
 	{
-#ifdef INDEX_SELECTOR_MEASURE_TIME
+#if INDEX_SELECTOR_MEASURE_TIME
 		m_timeMutex.lock ();
 		if (m_nRunningCutters++ == 0)
 		{
@@ -115,7 +115,7 @@ namespace IndexSelector
 
 	void Cutter::Manager::endCutter ()
 	{
-#ifdef INDEX_SELECTOR_MEASURE_TIME
+#if INDEX_SELECTOR_MEASURE_TIME
 		m_timeMutex.lock ();
 		if (--m_nRunningCutters == 0)
 		{
@@ -148,7 +148,7 @@ namespace IndexSelector
 
 	double Cutter::Manager::elapsedTime () const
 	{
-#ifdef INDEX_SELECTOR_MEASURE_TIME
+#if INDEX_SELECTOR_MEASURE_TIME
 		return std::chrono::duration<double> (m_elapsedTime).count ();
 #else
 		return 0;

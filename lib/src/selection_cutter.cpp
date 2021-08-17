@@ -44,7 +44,7 @@ namespace IndexSelector
 				{
 					if (_callback.getValue (*xit) > vy)
 					{
-						_callback.add (*xit - si.y <= 0);
+						_callback.add (*xit - si.y <= 0, IloCplex::CutManagement::UseCutForce);
 						xit = si.xs.erase_after (xoit);
 					}
 					else
@@ -64,6 +64,11 @@ namespace IndexSelector
 			}
 		}
 		_callback.unlockIfShared ();
+	}
+
+	bool SelectionCutter::shouldShare () const
+	{
+		return manager.options.shareSelectionCutter;
 	}
 
 }

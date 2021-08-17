@@ -60,7 +60,7 @@ namespace IndexSelector
 		class Manager final
 		{
 
-#ifdef INDEX_SELECTOR_MEASURE_TIME
+#if INDEX_SELECTOR_MEASURE_TIME
 			IloFastMutex m_timeMutex{};
 			std::chrono::steady_clock::time_point m_startTime;
 			size_t m_nRunningCutters{};

@@ -9,13 +9,14 @@ namespace IndexSelector
 	class OptimalSizeCutter final : public SimpleCutter<OptimalSizeCutter>
 	{
 
-		IloBoolVarArray m_zs;
+		IloNumVarArray m_zs;
 		IloNumArray m_vys;
 		IloCplex m_cplex;
 
 	protected:
 
 		void cut (Callback& _callback) override;
+		bool shouldShare () const override;
 
 	public:
 

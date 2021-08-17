@@ -5,7 +5,7 @@
 namespace IndexSelector
 {
 
-	void Problem::validate() const
+	void Problem::validate () const
 	{
 		if (maxSize < 0)
 		{
@@ -25,7 +25,7 @@ namespace IndexSelector
 		for (const Index& i : indices)
 		{
 			i.validate ();
-			if (i.nQueries() != unindexedQueryCosts.size())
+			if (i.nQueries () != unindexedQueryCosts.size ())
 			{
 				throw std::invalid_argument{ "Mismatched number of queries between indices" };
 			}
@@ -34,7 +34,7 @@ namespace IndexSelector
 
 	size_t Problem::nQueries () const
 	{
-		return unindexedQueryCosts.size();
+		return unindexedQueryCosts.size ();
 	}
 
 	size_t Problem::nIndices () const

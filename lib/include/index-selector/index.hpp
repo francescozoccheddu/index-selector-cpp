@@ -20,5 +20,5 @@ namespace IndexSelector
 	};
 
 }
-	
+
 #endif

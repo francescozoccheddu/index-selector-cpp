@@ -8,7 +8,12 @@
 #include <format>
 #include <chrono>
 
-#define INDEX_SELECTOR_AS_BOOK
+#define INDEX_SELECTOR_DISABLE_ADVANCED_CUTS 1
+#define INDEX_SELECTOR_DISABLE_GOMORY_CUTS 1
+#define INDEX_SELECTOR_DISABLE_PRESOLVE 1
+#define INDEX_SELECTOR_DISABLE_HEURISTICS 1
+#define INDEX_SELECTOR_DISABLE_NON_PRIMAL_LP 1
+#define INDEX_SELECTOR_DISABLE_OUT 1
 
 namespace IndexSelector
 {
@@ -25,12 +30,6 @@ namespace IndexSelector
 		{
 			solution = solve (env, _problem, _options);
 		}
-		catch (IloException& _e)
-		{
-			env.end ();
-			std::cout << _e.getMessage () << std::endl; // TODO Remove
-			throw;
-		}
 		catch (...)
 		{
 			env.end ();
@@ -46,19 +45,18 @@ namespace IndexSelector
 		VariableMatrix v{ _env, _problem, _options.reduceVariables };
 		IloModel m{ create_model (_env, v, s.statistics) };
 		IloCplex c{ _env };
-#ifndef NDEBUG
+#if INDEX_SELECTOR_DISABLE_OUT
 		c.setOut (_env.getNullStream ());
 		c.setError (_env.getNullStream ());
 #endif
 		c.setParam (IloCplex::Param::MIP::Strategy::Search, IloCplex::Traditional);
 		c.setParam (IloCplex::Param::TimeLimit, _options.timeLimit);
-#ifdef INDEX_SELECTOR_AS_BOOK
+#if INDEX_SELECTOR_DISABLE_ADVANCED_CUTS
 		c.setParam (IloCplex::Param::MIP::Cuts::BQP, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::Cliques, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::Covers, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::Disjunctive, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::FlowCovers, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::Gomory, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::GUBCovers, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::Implied, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::LiftProj, -1);
@@ -69,13 +67,24 @@ namespace IndexSelector
 		c.setParam (IloCplex::Param::MIP::Cuts::PathCut, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::RLT, -1);
 		c.setParam (IloCplex::Param::MIP::Cuts::ZeroHalfCut, -1);
+#endif
+#if INDEX_SELECTOR_DISABLE_GOMORY_CUTS
+		c.setParam (IloCplex::Param::MIP::Cuts::Gomory, -1);
+#if INDEX_SELECTOR_DISABLE_ADVANCED_CUTS
 		c.setParam (IloCplex::Param::MIP::Limits::CutsFactor, 0.0);
 		c.setParam (IloCplex::Param::MIP::Limits::CutPasses, -1);
+#endif
+#endif
+#if INDEX_SELECTOR_DISABLE_HEURISTICS
 		c.setParam (IloCplex::Param::MIP::Strategy::HeuristicEffort, 0);
+#endif
+#if INDEX_SELECTOR_DISABLE_NON_PRIMAL_LP
 		c.setParam (IloCplex::Param::RootAlgorithm, IloCplex::Algorithm::Primal);
 		c.setParam (IloCplex::Param::MIP::SubMIP::StartAlg, IloCplex::Algorithm::Primal);
 		c.setParam (IloCplex::Param::MIP::SubMIP::SubAlg, IloCplex::Algorithm::Primal);
 		c.setParam (IloCplex::Param::NodeAlgorithm, IloCplex::Algorithm::Primal);
+#endif
+#if INDEX_SELECTOR_DISABLE_PRESOLVE
 		c.setParam (IloCplex::Param::Preprocessing::Presolve, false);
 #endif
 		c.extract (m);
@@ -105,7 +114,7 @@ namespace IndexSelector
 		std::chrono::duration<double> elapsedTime = endTime - startTime;
 		s.statistics.nSelectionCuts = selectionCutManager.nCuts ();
 		s.statistics.nSizeCuts = sizeCutManager.nCuts ();
-#ifdef INDEX_SELECTOR_MEASURE_TIME
+#if INDEX_SELECTOR_MEASURE_TIME
 		s.statistics.selectionCutElapsedTime = selectionCutManager.elapsedTime ();
 		s.statistics.sizeCutElapsedTime = sizeCutManager.elapsedTime ();
 #endif

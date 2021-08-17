@@ -17,7 +17,7 @@ namespace IndexSelector
 		m_cplex.setOut (_manager.env.getNullStream ());
 		m_cplex.setError (_manager.env.getNullStream ());
 		const int nZs{ static_cast<int>(_manager.variables.nActiveYs ()) };
-		m_zs = IloBoolVarArray{ _manager.env, nZs };
+		IloBoolVarArray zs{ _manager.env, nZs };
 		m_vys = IloNumArray{ _manager.env, nZs };
 		size_t ai{ 0 }, i{ 0 };
 		while (ai < manager.variables.nActiveYs ())
@@ -29,9 +29,12 @@ namespace IndexSelector
 			}
 			i++;
 		}
-		m.add (IloScalProd (m_zs, m_vys) >= std::nextafter (_manager.variables.problem ().maxSize, _manager.variables.problem ().maxSize + 1));
+		m.add (IloScalProd (zs, m_vys) >= std::nextafter (_manager.variables.problem ().maxSize, _manager.variables.problem ().maxSize + 1));
+		m.add (IloMinimize (manager.env, IloScalProd (zs, m_vys)));
 		m_cplex.extract (m);
-		m_cplex.setParam (IloCplex::Param::TimeLimit, _manager.options.optimalSizeCutTimeLimit);
+		m_cplex.setParam (IloCplex::Param::TimeLimit, _manager.options.sizeCutTimeLimit);
+		m_zs = zs.toNumVarArray ();
+		zs.end ();
 	}
 
 	void OptimalSizeCutter::cut (Callback& _callback)
@@ -48,7 +51,7 @@ namespace IndexSelector
 				}
 			}
 		}
-		m_cplex.getModel ().add (IloMinimize (manager.env, IloScalProd (m_zs, m_vys)));
+		m_cplex.getObjective ().setLinearCoefs (m_zs, m_vys);
 		if (m_cplex.solve () && m_cplex.getObjValue () < 1)
 		{
 			IloExpr sum{ manager.env };
@@ -67,11 +70,28 @@ namespace IndexSelector
 					ai++;
 				}
 			}
-			_callback.add (sum <= count - 1);
+			IloCplex::CutManagement management;
+			switch (manager.options.sizeCutManagement)
+			{
+				case Options::ESizeCutManagement::CannotPurge:
+					management = IloCplex::CutManagement::UseCutForce;
+					break;
+				case Options::ESizeCutManagement::CanPurgeLater:
+					management = IloCplex::CutManagement::UseCutPurge;
+					break;
+				case Options::ESizeCutManagement::CanFilter:
+					management = IloCplex::CutManagement::UseCutFilter;
+					break;
+			}
+			_callback.add (sum <= count - 1, management);
 			sum.end ();
 		}
-		m_cplex.getObjective ().end ();
 		_callback.unlockIfShared ();
+	}
+
+	bool OptimalSizeCutter::shouldShare () const
+	{
+		return manager.options.shareSizeCutter;
 	}
 
 }

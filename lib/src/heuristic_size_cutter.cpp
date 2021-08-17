@@ -2,6 +2,7 @@
 #include <limits>
 #include <cmath>
 #include <algorithm>
+#include <chrono>
 
 
 namespace IndexSelector
@@ -27,8 +28,8 @@ namespace IndexSelector
 				i++;
 			}
 		}
-		m_maxK = std::min<size_t> (_manager.options.heuristicSizeCutsMaxSize, nAy);
-#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
+		m_maxK = std::min<size_t> (_manager.options.nMaxHeuristicSizeCutsVars, nAy);
+#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 		std::sort (m_candidates.begin (), m_candidates.end (), [] (const Candidate& _a, const Candidate& _b)
 		{
 			return _a.size > _b.size;
@@ -91,7 +92,7 @@ namespace IndexSelector
 		{
 			if (!pushChosen (_callback))
 			{
-#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
+#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 				for (size_t i{ 0 }; i < _k; i++)
 				{
 					const size_t mi = (i == _k - 1) ? 0 : (m_chosen[i + 1] + 1);
@@ -103,6 +104,10 @@ namespace IndexSelector
 					}
 				}
 #endif
+			}
+			else if (m_remainingCuts == 0)
+			{
+				return;
 			}
 			size_t i;
 			for (i = 0; i < _k; i++)
@@ -124,7 +129,7 @@ namespace IndexSelector
 		}
 	}
 
-	bool HeuristicSizeCutter::pushChosen (Callback& _callback) const
+	bool HeuristicSizeCutter::pushChosen (Callback& _callback)
 	{
 		Real size{}, value{};
 		for (size_t c{ 0 }; c < m_chosen.size (); c++)
@@ -143,8 +148,22 @@ namespace IndexSelector
 			{
 				sum += m_kCandidates[m_chosen[c]]->y;
 			}
-			_callback.add (sum <= static_cast<int>(m_chosen.size () - 1));
+			IloCplex::CutManagement management;
+			switch (manager.options.sizeCutManagement)
+			{
+				case Options::ESizeCutManagement::CannotPurge:
+					management = IloCplex::CutManagement::UseCutForce;
+					break;
+				case Options::ESizeCutManagement::CanPurgeLater:
+					management = IloCplex::CutManagement::UseCutPurge;
+					break;
+				case Options::ESizeCutManagement::CanFilter:
+					management = IloCplex::CutManagement::UseCutFilter;
+					break;
+			}
+			_callback.add (sum <= static_cast<int>(m_chosen.size () - 1), management);
 			sum.end ();
+			m_remainingCuts--;
 		}
 		return true;
 	}
@@ -156,6 +175,8 @@ namespace IndexSelector
 			return;
 		}
 		_callback.lockIfShared ();
+		std::chrono::steady_clock::time_point startTime{ std::chrono::high_resolution_clock::now () };
+		m_remainingCuts = manager.options.nMaxSizeCuts;
 		m_valueSortedCandidates.clear ();
 		for (Candidate& c : m_candidates)
 		{
@@ -167,7 +188,7 @@ namespace IndexSelector
 		}
 		if (!m_valueSortedCandidates.empty ())
 		{
-#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
+#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 			std::sort (m_valueSortedCandidates.begin (), m_valueSortedCandidates.end (), [] (const Candidate* _a, const Candidate* _b)
 			{
 				return _a->value > _b->value;
@@ -176,12 +197,12 @@ namespace IndexSelector
 			for (size_t k{ m_minK }; k <= m_maxK; k++)
 			{
 				m_kCandidates.clear ();
-#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
+#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 				Real topSum{}, value{}, size{};
 #endif
 				for (Candidate* c : m_valueSortedCandidates)
 				{
-#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
+#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 					if (m_kCandidates.size () >= k - 1 and c->value < (topSum - k + 1))
 					{
 						break;
@@ -203,26 +224,30 @@ namespace IndexSelector
 						size += c->size;
 #endif
 						m_kCandidates.push_back (c);
-#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
+#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 					}
 #endif
 				}
-#ifdef INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
+#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 				if (value > k - 1 and size > manager.variables.problem ().maxSize and m_kCandidates.size () >= k)
 #else
 				if (m_kCandidates.size () >= k)
 #endif
 				{
 					choose (_callback, k);
+					if (m_remainingCuts == 0 or std::chrono::duration<double>{std::chrono::high_resolution_clock::now () - startTime}.count () > manager.options.sizeCutTimeLimit)
+					{
+						break;
+					}
+				}
 			}
 		}
-	}
 		_callback.unlockIfShared ();
-}
+	}
 
 	bool HeuristicSizeCutter::shouldShare () const
 	{
 		return false;
 	}
 
-	}
+}

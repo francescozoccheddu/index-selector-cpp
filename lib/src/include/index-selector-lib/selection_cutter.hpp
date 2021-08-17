@@ -22,6 +22,7 @@ namespace IndexSelector
 	protected:
 
 		void cut (Callback& _callback) override;
+		bool shouldShare () const override;
 
 	public:
 
