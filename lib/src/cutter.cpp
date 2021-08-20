@@ -103,19 +103,16 @@ namespace IndexSelector
 
 	void Cutter::Manager::startCutter ()
 	{
-#if INDEX_SELECTOR_MEASURE_TIME
 		m_timeMutex.lock ();
 		if (m_nRunningCutters++ == 0)
 		{
 			m_startTime = std::chrono::high_resolution_clock::now ();
 		}
 		m_timeMutex.unlock ();
-#endif
 	}
 
 	void Cutter::Manager::endCutter ()
 	{
-#if INDEX_SELECTOR_MEASURE_TIME
 		m_timeMutex.lock ();
 		if (--m_nRunningCutters == 0)
 		{
@@ -123,7 +120,6 @@ namespace IndexSelector
 			m_elapsedTime += endTime - m_startTime;
 		}
 		m_timeMutex.unlock ();
-#endif
 	}
 
 	void Cutter::Manager::lock ()
@@ -148,11 +144,7 @@ namespace IndexSelector
 
 	double Cutter::Manager::elapsedTime () const
 	{
-#if INDEX_SELECTOR_MEASURE_TIME
 		return std::chrono::duration<double> (m_elapsedTime).count ();
-#else
-		return 0;
-#endif
 	}
 
 }

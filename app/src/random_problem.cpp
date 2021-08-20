@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <random>
 
-namespace IndexSelector
+namespace IndexSelector::App
 {
 
 	void RandomProblemOptions::validate () const
@@ -44,6 +44,7 @@ namespace IndexSelector
 
 	Problem randomProblem (const RandomProblemOptions& _options, unsigned int _seed)
 	{
+		_options.validate ();
 		std::mt19937 re{ _seed };
 		Problem problem{};
 		{

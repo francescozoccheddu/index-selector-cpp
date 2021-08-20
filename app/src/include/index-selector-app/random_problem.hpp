@@ -4,7 +4,7 @@
 #include <index-selector/problem.hpp>
 #include <concepts>
 
-namespace IndexSelector
+namespace IndexSelector::App
 {
 
 	struct RandomProblemOptions final

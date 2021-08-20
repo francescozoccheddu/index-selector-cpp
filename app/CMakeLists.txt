@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Source files
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
-add_executable("app" ${SRC_FILES} "src/include/index-selector-app/random_problem.hpp" "src/random_problem.cpp")
+add_executable("app" ${SRC_FILES})
 target_include_directories("app" PRIVATE "${PROJECT_SOURCE_DIR}/src/include")
 
 # Lib

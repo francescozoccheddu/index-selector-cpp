@@ -115,10 +115,8 @@ namespace IndexSelector
 		std::chrono::duration<double> elapsedTime = endTime - startTime;
 		s.statistics.nSelectionCuts = selectionCutManager.nCuts ();
 		s.statistics.nSizeCuts = sizeCutManager.nCuts ();
-#if INDEX_SELECTOR_MEASURE_TIME
 		s.statistics.selectionCutElapsedTime = selectionCutManager.elapsedTime ();
 		s.statistics.sizeCutElapsedTime = sizeCutManager.elapsedTime ();
-#endif
 		s.statistics.totalElapsedTime = elapsedTime.count ();
 		s.statistics.nNodes = static_cast<size_t>(c.getNnodes ());
 		s.statistics.nVariables = static_cast<size_t>(c.getNbinVars ());
