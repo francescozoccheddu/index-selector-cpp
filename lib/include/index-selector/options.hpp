@@ -19,16 +19,23 @@ namespace IndexSelector
 			CannotPurge, CanPurgeLater, CanFilter
 		};
 
+		enum class EAdditionalCuts
+		{
+			All, GomoryOnly, None
+		};
+
 		double timeLimit{ 60.0 * 60.0 * 24.0 * 365.0 };
 		bool reduceVariables{ true };
 		bool shareSelectionCutter{ true };
 		bool shareSizeCutter{ true };
 		bool enableSelectionCuts{ true };
 		ESizeCutMode sizeCutMode{ ESizeCutMode::None };
-		int nMaxHeuristicSizeCutsVars{ 10 };
+		int nMaxHeuristicSizeCutVars{ 10 };
 		double sizeCutTimeLimit{ 0.5 };
 		int nMaxSizeCuts{ 20 };
+		bool enableHeuristicSizeCutHeuristics{ true };
 		ESizeCutManagement sizeCutManagement{ ESizeCutManagement::CannotPurge };
+		EAdditionalCuts additionalCuts{ EAdditionalCuts::None };
 
 		void validate () const;
 

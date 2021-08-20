@@ -28,45 +28,48 @@ namespace IndexSelector
 				i++;
 			}
 		}
-		m_maxK = std::min<size_t> (_manager.options.nMaxHeuristicSizeCutsVars, nAy);
-#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
-		std::sort (m_candidates.begin (), m_candidates.end (), [] (const Candidate& _a, const Candidate& _b)
+		m_maxK = std::min<size_t> (_manager.options.nMaxHeuristicSizeCutVars, nAy);
+		if (_manager.options.enableHeuristicSizeCutHeuristics)
 		{
-			return _a.size > _b.size;
-		});
-		Real topSum{}, kSum{};
-		size_t ai{}, sai{};
-		const Real maxSize{ _manager.variables.problem ().maxSize };
-		for (size_t k{ 2 }; k <= m_maxK; k++)
-		{
-			topSum += m_candidates[k - 2].size;
-			Real minSize{ maxSize - topSum };
-			while (sai < k)
+			std::sort (m_candidates.begin (), m_candidates.end (), [] (const Candidate& _a, const Candidate& _b)
 			{
-				kSum += m_candidates[sai].size;
-				sai++;
-			}
-			ai = std::max<size_t> (ai, sai);
-			while (ai < nAy and m_candidates[ai].size >= minSize)
+				return _a.size > _b.size;
+			});
+			Real topSum{}, kSum{};
+			size_t ai{}, sai{};
+			const Real maxSize{ _manager.variables.problem ().maxSize };
+			for (size_t k{ 2 }; k <= m_maxK; k++)
 			{
-				ai++;
-			}
-			if (kSum >= maxSize)
-			{
-				if (!m_minK)
+				topSum += m_candidates[k - 2].size;
+				Real minSize{ maxSize - topSum };
+				while (sai < k)
 				{
-					m_minK = k;
+					kSum += m_candidates[sai].size;
+					sai++;
 				}
-				size_t mm{ ai };
-				while (mm > 0 and m_candidates[--mm].minK == 0)
+				ai = std::max<size_t> (ai, sai);
+				while (ai < nAy and m_candidates[ai].size >= minSize)
 				{
-					m_candidates[mm].minK = k;
+					ai++;
+				}
+				if (kSum >= maxSize)
+				{
+					if (!m_minK)
+					{
+						m_minK = k;
+					}
+					size_t mm{ ai };
+					while (mm > 0 and m_candidates[--mm].minK == 0)
+					{
+						m_candidates[mm].minK = k;
+					}
 				}
 			}
 		}
-#else
-		m_minK = 2;
-#endif
+		else
+		{
+			m_minK = 2;
+		}
 		if (m_minK)
 		{
 			m_valueSortedCandidates = std::vector<Candidate*> (m_candidates.size ());
@@ -92,18 +95,19 @@ namespace IndexSelector
 		{
 			if (!pushChosen (_callback))
 			{
-#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
-				for (size_t i{ 0 }; i < _k; i++)
+				if (manager.options.enableHeuristicSizeCutHeuristics)
 				{
-					const size_t mi = (i == _k - 1) ? 0 : (m_chosen[i + 1] + 1);
-					bool stop{ m_chosen[i] <= mi + 1 };
-					m_chosen[i] = nc;
-					if (stop)
+					for (size_t i{ 0 }; i < _k; i++)
 					{
-						break;
+						const size_t mi = (i == _k - 1) ? 0 : (m_chosen[i + 1] + 1);
+						bool stop{ m_chosen[i] <= mi + 1 };
+						m_chosen[i] = nc;
+						if (stop)
+						{
+							break;
+						}
 					}
 				}
-#endif
 			}
 			else if (m_remainingCuts == 0)
 			{
@@ -188,51 +192,45 @@ namespace IndexSelector
 		}
 		if (!m_valueSortedCandidates.empty ())
 		{
-#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
-			std::sort (m_valueSortedCandidates.begin (), m_valueSortedCandidates.end (), [] (const Candidate* _a, const Candidate* _b)
+			if (manager.options.enableHeuristicSizeCutHeuristics)
 			{
-				return _a->value > _b->value;
-			});
-#endif
+				std::sort (m_valueSortedCandidates.begin (), m_valueSortedCandidates.end (), [] (const Candidate* _a, const Candidate* _b)
+				{
+					return _a->value > _b->value;
+				});
+			}
 			for (size_t k{ m_minK }; k <= m_maxK; k++)
 			{
 				m_kCandidates.clear ();
-#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 				Real topSum{}, value{}, size{};
-#endif
 				for (Candidate* c : m_valueSortedCandidates)
 				{
-#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
-					if (m_kCandidates.size () >= k - 1 and c->value < (topSum - k + 1))
+					if (manager.options.enableHeuristicSizeCutHeuristics)
 					{
-						break;
-					}
-					if (k >= c->minK)
-					{
-						if (m_kCandidates.size () < k - 1)
+						if (m_kCandidates.size () >= k - 1 and c->value < (topSum - k + 1))
 						{
-							topSum += c->value;
+							break;
 						}
-						if (m_kCandidates.size () < k)
+						if (k >= c->minK)
 						{
-							value += c->value;
-							if (m_candidates.size () == k - 1 and value <= k - 1)
+							if (m_kCandidates.size () < k - 1)
 							{
-								break;
+								topSum += c->value;
 							}
+							if (m_kCandidates.size () < k)
+							{
+								value += c->value;
+								if (m_candidates.size () == k - 1 and value <= k - 1)
+								{
+									break;
+								}
+							}
+							size += c->size;
 						}
-						size += c->size;
-#endif
-						m_kCandidates.push_back (c);
-#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 					}
-#endif
+					m_kCandidates.push_back (c);
 				}
-#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
-				if (value > k - 1 and size > manager.variables.problem ().maxSize and m_kCandidates.size () >= k)
-#else
-				if (m_kCandidates.size () >= k)
-#endif
+				if (m_kCandidates.size () >= k and (!manager.options.enableHeuristicSizeCutHeuristics or (value > k - 1 and size > manager.variables.problem ().maxSize)))
 				{
 					choose (_callback, k);
 					if (m_remainingCuts == 0 or std::chrono::duration<double>{std::chrono::high_resolution_clock::now () - startTime}.count () > manager.options.sizeCutTimeLimit)

@@ -8,11 +8,10 @@
 #include <format>
 #include <chrono>
 
-#define INDEX_SELECTOR_DISABLE_ADVANCED_CUTS 1
-#define INDEX_SELECTOR_DISABLE_GOMORY_CUTS 1
-#define INDEX_SELECTOR_DISABLE_PRESOLVE 1
-#define INDEX_SELECTOR_DISABLE_HEURISTICS 1
-#define INDEX_SELECTOR_DISABLE_NON_PRIMAL_LP 1
+#define INDEX_SELECTOR_DISABLE_CUTS 0
+#define INDEX_SELECTOR_DISABLE_PRESOLVE 0
+#define INDEX_SELECTOR_DISABLE_HEURISTICS 0
+#define INDEX_SELECTOR_DISABLE_NON_PRIMAL_LP 0
 #define INDEX_SELECTOR_DISABLE_OUT 1
 
 namespace IndexSelector
@@ -51,29 +50,31 @@ namespace IndexSelector
 #endif
 		c.setParam (IloCplex::Param::MIP::Strategy::Search, IloCplex::Traditional);
 		c.setParam (IloCplex::Param::TimeLimit, _options.timeLimit);
-#if INDEX_SELECTOR_DISABLE_ADVANCED_CUTS
-		c.setParam (IloCplex::Param::MIP::Cuts::BQP, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::Cliques, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::Covers, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::Disjunctive, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::FlowCovers, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::GUBCovers, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::Implied, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::LiftProj, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::LocalImplied, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::MCFCut, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::MIRCut, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::Nodecuts, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::PathCut, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::RLT, -1);
-		c.setParam (IloCplex::Param::MIP::Cuts::ZeroHalfCut, -1);
-#endif
-#if INDEX_SELECTOR_DISABLE_GOMORY_CUTS
-		c.setParam (IloCplex::Param::MIP::Cuts::Gomory, -1);
-#if INDEX_SELECTOR_DISABLE_ADVANCED_CUTS
+		if (_options.additionalCuts != Options::EAdditionalCuts::All)
+		{
+			c.setParam (IloCplex::Param::MIP::Cuts::BQP, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::Cliques, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::Covers, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::Disjunctive, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::FlowCovers, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::GUBCovers, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::Implied, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::LiftProj, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::LocalImplied, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::MCFCut, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::MIRCut, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::Nodecuts, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::PathCut, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::RLT, -1);
+			c.setParam (IloCplex::Param::MIP::Cuts::ZeroHalfCut, -1);
+		}
+		if (_options.additionalCuts == Options::EAdditionalCuts::None)
+		{
+			c.setParam (IloCplex::Param::MIP::Cuts::Gomory, -1);
+		}
+#if INDEX_SELECTOR_DISABLE_CUTS
 		c.setParam (IloCplex::Param::MIP::Limits::CutsFactor, 0.0);
 		c.setParam (IloCplex::Param::MIP::Limits::CutPasses, -1);
-#endif
 #endif
 #if INDEX_SELECTOR_DISABLE_HEURISTICS
 		c.setParam (IloCplex::Param::MIP::Strategy::HeuristicEffort, 0);

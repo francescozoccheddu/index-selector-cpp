@@ -6,8 +6,6 @@
 #include <vector>
 #include <index-selector/types.hpp>
 
-#define INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS 1
-
 namespace IndexSelector
 {
 
@@ -18,9 +16,7 @@ namespace IndexSelector
 		{
 			Real size;
 			IloBoolVar y;
-#if INDEX_SELECTOR_HEURISTIC_SIZE_CUTTER_ENABLE_HEURISTICS
 			size_t minK{};
-#endif
 			Real value;
 		};
 

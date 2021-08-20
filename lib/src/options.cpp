@@ -8,7 +8,7 @@ namespace IndexSelector
 
 	void Options::validate () const
 	{
-		if (nMaxHeuristicSizeCutsVars < 2)
+		if (nMaxHeuristicSizeCutVars < 2)
 		{
 			throw std::out_of_range{ "Number of heuristic size cuts max vars must be greater than 1" };
 		}
