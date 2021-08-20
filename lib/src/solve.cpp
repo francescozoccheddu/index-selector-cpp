@@ -146,7 +146,7 @@ namespace IndexSelector
 						}
 					}
 				}
-				s.bestIndexPerQuery = ImmutableArray<size_t>::take_ownership (pIXs, nq);
+				s.bestIndexPerQuery = ImmutableArray<size_t>::takeOwnership (pIXs, nq);
 			}
 			{
 				std::vector<size_t> iYs{};

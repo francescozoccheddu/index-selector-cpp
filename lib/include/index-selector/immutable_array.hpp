@@ -52,7 +52,7 @@ namespace IndexSelector
 
 		};
 
-		static ImmutableArray<TValue> take_ownership (TValue* _pData, size_t _nData);
+		static ImmutableArray<TValue> takeOwnership (TValue* _pData, size_t _nData);
 
 		ImmutableArray () = default;
 
@@ -118,7 +118,7 @@ namespace IndexSelector
 	}
 
 	template<typename TValue>
-	ImmutableArray<TValue> ImmutableArray<TValue>::take_ownership (TValue* _pData, size_t _nData)
+	ImmutableArray<TValue> ImmutableArray<TValue>::takeOwnership (TValue* _pData, size_t _nData)
 	{
 		ImmutableArray<TValue> a;
 		a.m_data = { _pData };

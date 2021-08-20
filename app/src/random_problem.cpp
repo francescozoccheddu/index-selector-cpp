@@ -1,0 +1,82 @@
+#include <index-selector-app/random_problem.hpp>
+
+#include <stdexcept>
+#include <random>
+
+namespace IndexSelector
+{
+
+	void RandomProblemOptions::validate () const
+	{
+		if (nIndices < 0)
+		{
+			throw std::out_of_range ("Negative number of indices");
+		}
+		if (nQueries < 0)
+		{
+			throw std::out_of_range ("Negative number of queries");
+		}
+		if (indexSizeDev < 1)
+		{
+			throw std::out_of_range ("Index size deviance must be at least 1");
+		}
+		if (maxSizeRatio < 0 or maxSizeRatio > 1)
+		{
+			throw std::out_of_range ("Max size ratio must fall in range [0, 1]");
+		}
+		if (indexFixedCostDev < 1)
+		{
+			throw std::out_of_range ("Index fixed cost deviance must be at least 1");
+		}
+		if (indexFixedCostRatio < 0)
+		{
+			throw std::out_of_range ("Index fixed cost ratio cannot be negative");
+		}
+		if (queryCostDev < 1)
+		{
+			throw std::out_of_range ("Query cost deviance must be at least 1");
+		}
+		if (indexedQueryCostRatio < 0)
+		{
+			throw std::out_of_range ("Indexed query cost ratio cannot be negative");
+		}
+	}
+
+	Problem randomProblem (const RandomProblemOptions& _options, unsigned int _seed)
+	{
+		std::mt19937 re{ _seed };
+		Problem problem{};
+		{
+			const std::uniform_real_distribution r = std::uniform_real_distribution<double>{ 1, _options.queryCostDev };
+			Real* const ucs = new Real[_options.nQueries];
+			for (int q{ 0 }; q < _options.nQueries; q++)
+			{
+				ucs[q] = static_cast<Real>(r (re));
+			}
+			problem.unindexedQueryCosts = ImmutableArray<Real>::takeOwnership (ucs, _options.nQueries);
+		}
+		{
+			const std::uniform_real_distribution qcr = std::uniform_real_distribution<double>{ _options.indexedQueryCostRatio,  _options.queryCostDev * _options.indexedQueryCostRatio };
+			const std::uniform_real_distribution fcr = std::uniform_real_distribution<double>{ _options.indexFixedCostRatio,  _options.indexFixedCostDev * _options.indexFixedCostRatio };
+			const std::uniform_real_distribution sr = std::uniform_real_distribution<double>{ 1,  _options.indexSizeDev };
+			Index* const idxs = new Index[_options.nIndices];
+			double totalSize{};
+			for (int i{ 0 }; i < _options.nIndices; i++)
+			{
+				Index& index = idxs[i];
+				Real* const cs = new Real[_options.nQueries];
+				for (int q{ 0 }; q < _options.nQueries; q++)
+				{
+					cs[q] = static_cast<Real>(qcr (re));
+				}
+				index.queryCosts = ImmutableArray<Real>::takeOwnership (cs, _options.nQueries);
+				index.fixedCost = static_cast<Real>(fcr (re));
+				index.size = static_cast<Real>(totalSize += sr (re));
+			}
+			problem.indices = ImmutableArray<Index>::takeOwnership (idxs, _options.nIndices);
+			problem.maxSize = static_cast<Real>((totalSize + (sr.a () + sr.b ()) / 2.0 * _options.nIndices) / 2.0 * _options.maxSizeRatio);
+		}
+		return problem;
+	}
+
+}
