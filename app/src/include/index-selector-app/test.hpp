@@ -31,7 +31,7 @@ namespace IndexSelector::App
 		QueryCostDev = 1 << 15,
 		IndexFixedCostDev = 1 << 16
 	};
-	
+
 	inline EStatistics operator | (EStatistics _lhs, EStatistics _rhs)
 	{
 		using T = std::underlying_type_t <EStatistics>;
@@ -67,18 +67,31 @@ namespace IndexSelector::App
 		return (_src & _what) == _what;
 	}
 
+	const EStatistics problemSize{ EStatistics::IndicesCount | EStatistics::QueriesCount };
+	const EStatistics successAndTime{ EStatistics::Success | EStatistics::TotalTime };
+	const EStatistics selectionCutsCountAndTime{ EStatistics::SelectionCutCount | EStatistics::SelectionCutTime };
+	const EStatistics sizeCutsCountAndTime{ EStatistics::SizeCutCount | EStatistics::SizeCutTime };
+	const EStatistics cutsCountAndTime{ selectionCutsCountAndTime | sizeCutsCountAndTime };
+	const EStatistics cutsCount{ EStatistics::SizeCutCount | EStatistics::SelectionCutCount };
+	const EStatistics cutsTime{ EStatistics::SizeCutTime | EStatistics::SelectionCutTime };
+	const EStatistics cutsStatistics{ successAndTime | cutsCountAndTime | EStatistics::Nodes };
+	const EStatistics modelStatistics{ successAndTime | EStatistics::Variables | EStatistics::Constraints };
+	const EStatistics cutsAndModelStatistics{ cutsStatistics | modelStatistics };
+	const EStatistics allProblemStatistics{ problemSize | EStatistics::IndexFixedCostDev | EStatistics::IndexFixedCostRatio | EStatistics::IndexQueryCostRatio | EStatistics::IndexSizeDev | EStatistics::MaxSizeRatio | EStatistics::QueryCostDev };
+	const EStatistics allStatistics{ allProblemStatistics | cutsAndModelStatistics };
+
 	void test (const ImmutableArray<RandomProblemOptions>& _problems, const ImmutableArray<Options>& _configs, std::ostream& _csv, EStatistics _statistics, std::ostream& _progress = std::cout, int _nTests = 1, unsigned int _seed = 0);
-	
+
 	ImmutableArray<double> range (double _min, double _max, int _count);
-	
+
 	ImmutableArray<int> range (int _min, int _max, int _count);
 
 	ImmutableArray<RandomProblemOptions> explodeMaxSizeRatio (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _maxSizeRatios);
 
 	ImmutableArray<RandomProblemOptions> explodeIndicesCount (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<int> _indexCounts);
-	
+
 	ImmutableArray<RandomProblemOptions> explodeQueryCount (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<int> _queryCounts);
-	
+
 	ImmutableArray<RandomProblemOptions> explodeIndicesAndQueryCount (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<int> _indicesCounts, ImmutableArray<double> _queriesRatios);
 
 	ImmutableArray<RandomProblemOptions> explodeIndexFixedCostRatio (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _fixedCostRatios);

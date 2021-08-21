@@ -114,7 +114,7 @@ namespace IndexSelector::App
 					selectionCutElapsedTime += s.statistics.selectionCutElapsedTime;
 					sizeCutElapsedTime += s.statistics.sizeCutElapsedTime;
 					succeeded += s.succeeded ? 1 : 0;
-					prg << s.statistics.totalElapsedTime << std::endl;
+					prg << s.statistics.totalElapsedTime << "s" << std::endl;
 				}
 				if (has (_statistics, EStatistics::Success))
 					csv << "," << succeeded;

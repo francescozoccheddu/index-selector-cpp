@@ -26,8 +26,8 @@ namespace IndexSelector
 
 		double timeLimit{ 60.0 * 60.0 * 24.0 * 365.0 };
 		bool reduceVariables{ true };
-		bool shareSelectionCutter{ true };
-		bool shareSizeCutter{ true };
+		bool shareSelectionCutter{ false };
+		bool shareSizeCutter{ false };
 		bool enableSelectionCuts{ true };
 		ESizeCutMode sizeCutMode{ ESizeCutMode::None };
 		int nMaxHeuristicSizeCutVars{ 10 };
