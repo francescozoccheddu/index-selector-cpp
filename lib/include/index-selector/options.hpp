@@ -14,7 +14,7 @@ namespace IndexSelector
 			None, Heuristic, Optimal
 		};
 
-		enum class ESizeCutManagement
+		enum class ECutManagement
 		{
 			CannotPurge, CanPurgeLater, CanFilter
 		};
@@ -34,7 +34,8 @@ namespace IndexSelector
 		double sizeCutTimeLimit{ 0.5 };
 		int nMaxSizeCuts{ 20 };
 		bool enableHeuristicSizeCutHeuristics{ true };
-		ESizeCutManagement sizeCutManagement{ ESizeCutManagement::CannotPurge };
+		ECutManagement sizeCutManagement{ ECutManagement::CanFilter };
+		ECutManagement selectionCutManagement{ ECutManagement::CannotPurge };
 		EAdditionalCuts additionalCuts{ EAdditionalCuts::None };
 		bool presolve{ false };
 		bool enableHeuristics{ false };

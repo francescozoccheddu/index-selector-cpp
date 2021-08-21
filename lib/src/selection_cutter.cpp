@@ -42,9 +42,14 @@ namespace IndexSelector
 				std::forward_list<IloBoolVar>::iterator xoit = si.xs.before_begin (), xit = std::next (xoit);
 				while (xit != si.xs.end ())
 				{
+					bool gone{ false };
 					if (_callback.getValue (*xit) > vy)
 					{
 						_callback.add (*xit - si.y <= 0, IloCplex::CutManagement::UseCutForce);
+						gone = manager.options.selectionCutManagement == Options::ECutManagement::CannotPurge;
+					}
+					if (gone)
+					{
 						xit = si.xs.erase_after (xoit);
 					}
 					else
@@ -68,7 +73,7 @@ namespace IndexSelector
 
 	bool SelectionCutter::shouldShare () const
 	{
-		return manager.options.shareSelectionCutter;
+		return manager.options.shareSelectionCutter or manager.options.selectionCutManagement != Options::ECutManagement::CannotPurge;
 	}
 
 }

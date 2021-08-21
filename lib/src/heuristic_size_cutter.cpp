@@ -155,13 +155,13 @@ namespace IndexSelector
 			IloCplex::CutManagement management;
 			switch (manager.options.sizeCutManagement)
 			{
-				case Options::ESizeCutManagement::CannotPurge:
+				case Options::ECutManagement::CannotPurge:
 					management = IloCplex::CutManagement::UseCutForce;
 					break;
-				case Options::ESizeCutManagement::CanPurgeLater:
+				case Options::ECutManagement::CanPurgeLater:
 					management = IloCplex::CutManagement::UseCutPurge;
 					break;
-				case Options::ESizeCutManagement::CanFilter:
+				case Options::ECutManagement::CanFilter:
 					management = IloCplex::CutManagement::UseCutFilter;
 					break;
 			}
