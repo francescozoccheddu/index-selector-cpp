@@ -36,7 +36,7 @@ namespace IndexSelector::App
 		{
 			throw std::out_of_range ("Query cost deviance must be at least 1");
 		}
-		if (indexedQueryCostRatio < 0)
+		if (indexQueryCostRatio < 0)
 		{
 			throw std::out_of_range ("Indexed query cost ratio cannot be negative");
 		}
@@ -57,7 +57,7 @@ namespace IndexSelector::App
 			problem.unindexedQueryCosts = ImmutableArray<Real>::takeOwnership (ucs, _options.nQueries);
 		}
 		{
-			const std::uniform_real_distribution qcr = std::uniform_real_distribution<double>{ _options.indexedQueryCostRatio,  _options.queryCostDev * _options.indexedQueryCostRatio };
+			const std::uniform_real_distribution qcr = std::uniform_real_distribution<double>{ _options.indexQueryCostRatio,  _options.queryCostDev * _options.indexQueryCostRatio };
 			const std::uniform_real_distribution fcr = std::uniform_real_distribution<double>{ _options.indexFixedCostRatio,  _options.indexFixedCostDev * _options.indexFixedCostRatio };
 			const std::uniform_real_distribution sr = std::uniform_real_distribution<double>{ 1,  _options.indexSizeDev };
 			Index* const idxs = new Index[_options.nIndices];

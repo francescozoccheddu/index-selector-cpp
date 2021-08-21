@@ -36,6 +36,9 @@ namespace IndexSelector
 		bool enableHeuristicSizeCutHeuristics{ true };
 		ESizeCutManagement sizeCutManagement{ ESizeCutManagement::CannotPurge };
 		EAdditionalCuts additionalCuts{ EAdditionalCuts::None };
+		bool presolve{ false };
+		bool enableHeuristics{ false };
+		bool disableNonPrimalLP{ false };
 
 		void validate () const;
 

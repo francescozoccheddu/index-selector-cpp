@@ -8,10 +8,6 @@
 #include <format>
 #include <chrono>
 
-#define INDEX_SELECTOR_DISABLE_CUTS 0
-#define INDEX_SELECTOR_DISABLE_PRESOLVE 0
-#define INDEX_SELECTOR_DISABLE_HEURISTICS 0
-#define INDEX_SELECTOR_DISABLE_NON_PRIMAL_LP 0
 #define INDEX_SELECTOR_DISABLE_OUT 1
 
 namespace IndexSelector
@@ -72,22 +68,21 @@ namespace IndexSelector
 		{
 			c.setParam (IloCplex::Param::MIP::Cuts::Gomory, -1);
 		}
-#if INDEX_SELECTOR_DISABLE_CUTS
-		c.setParam (IloCplex::Param::MIP::Limits::CutsFactor, 0.0);
-		c.setParam (IloCplex::Param::MIP::Limits::CutPasses, -1);
-#endif
-#if INDEX_SELECTOR_DISABLE_HEURISTICS
-		c.setParam (IloCplex::Param::MIP::Strategy::HeuristicEffort, 0);
-#endif
-#if INDEX_SELECTOR_DISABLE_NON_PRIMAL_LP
-		c.setParam (IloCplex::Param::RootAlgorithm, IloCplex::Algorithm::Primal);
-		c.setParam (IloCplex::Param::MIP::SubMIP::StartAlg, IloCplex::Algorithm::Primal);
-		c.setParam (IloCplex::Param::MIP::SubMIP::SubAlg, IloCplex::Algorithm::Primal);
-		c.setParam (IloCplex::Param::NodeAlgorithm, IloCplex::Algorithm::Primal);
-#endif
-#if INDEX_SELECTOR_DISABLE_PRESOLVE
-		c.setParam (IloCplex::Param::Preprocessing::Presolve, false);
-#endif
+		if (!_options.enableHeuristics)
+		{
+			c.setParam (IloCplex::Param::MIP::Strategy::HeuristicEffort, 0);
+		}
+		if (_options.disableNonPrimalLP)
+		{
+			c.setParam (IloCplex::Param::RootAlgorithm, IloCplex::Algorithm::Primal);
+			c.setParam (IloCplex::Param::MIP::SubMIP::StartAlg, IloCplex::Algorithm::Primal);
+			c.setParam (IloCplex::Param::MIP::SubMIP::SubAlg, IloCplex::Algorithm::Primal);
+			c.setParam (IloCplex::Param::NodeAlgorithm, IloCplex::Algorithm::Primal);
+		}
+		if (!_options.presolve)
+		{
+			c.setParam (IloCplex::Param::Preprocessing::Presolve, false);
+		}
 		c.extract (m);
 		Cutter::Manager selectionCutManager{ _env, v, _options };
 		Cutter::Manager sizeCutManager{ _env, v, _options };

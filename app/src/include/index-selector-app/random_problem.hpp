@@ -17,7 +17,7 @@ namespace IndexSelector::App
 		double indexFixedCostDev{ 5 };
 		double indexFixedCostRatio{ 0.5 };
 		double queryCostDev{ 5 };
-		double indexedQueryCostRatio{ 0.75 };
+		double indexQueryCostRatio{ 0.75 };
 
 		void validate () const;
 
