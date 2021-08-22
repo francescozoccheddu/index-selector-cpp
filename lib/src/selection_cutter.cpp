@@ -31,7 +31,10 @@ namespace IndexSelector
 
 	void SelectionCutter::cut (Callback& _callback)
 	{
-		_callback.lockIfShared ();
+		if (manager.options.selectionCutManagement == Options::ECutManagement::CannotPurge)
+		{
+			_callback.lockIfShared ();
+		}
 		std::forward_list<SelectionIndex>::iterator yoit = m_selectionIndices.before_begin (), yit = std::next (yoit);
 		while (yit != m_selectionIndices.end ())
 		{
@@ -68,7 +71,10 @@ namespace IndexSelector
 				yoit = yit++;
 			}
 		}
-		_callback.unlockIfShared ();
+		if (manager.options.selectionCutManagement == Options::ECutManagement::CannotPurge)
+		{
+			_callback.unlockIfShared ();
+		}
 	}
 
 	bool SelectionCutter::shouldShare () const
