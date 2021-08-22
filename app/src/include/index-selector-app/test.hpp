@@ -4,105 +4,148 @@
 #include <index-selector-app/random_problem.hpp>
 #include <index-selector/immutable_array.hpp>
 #include <index-selector/options.hpp>
+#include <index-selector/solution.hpp>
 #include <ostream>
 #include <iostream>
-#include <type_traits>
 
 namespace IndexSelector::App
 {
 
-	enum class EStatistics
+	enum class EProblemFields
 	{
-		TotalTime = 1 << 0,
-		SelectionCutTime = 1 << 1,
-		SizeCutTime = 1 << 2,
-		Nodes = 1 << 3,
-		Variables = 1 << 4,
-		Constraints = 1 << 5,
-		SelectionCutCount = 1 << 6,
-		SizeCutCount = 1 << 7,
-		Success = 1 << 8,
-		QueriesCount = 1 << 9,
-		IndicesCount = 1 << 10,
-		MaxSizeRatio = 1 << 11,
-		IndexFixedCostRatio = 1 << 12,
-		IndexQueryCostRatio = 1 << 13,
-		IndexSizeDev = 1 << 14,
-		QueryCostDev = 1 << 15,
-		IndexFixedCostDev = 1 << 16
+		nQueries = 1 << 0,
+		nIndices = 1 << 1,
+		nIndicesMaxSize = 1 << 2,
+		indexFixedCostRatio = 1 << 3,
+		indexQueryCostRatio = 1 << 4,
+		indexFixedCostDev = 1 << 5,
+		indexSizeDev = 1 << 6,
+		queryCostDev = 1 << 7,
 	};
 
-	inline EStatistics operator | (EStatistics _lhs, EStatistics _rhs)
+	inline EProblemFields operator | (EProblemFields _lhs, EProblemFields _rhs)
 	{
-		using T = std::underlying_type_t <EStatistics>;
-		return static_cast<EStatistics>(static_cast<T>(_lhs) | static_cast<T>(_rhs));
+		using T = std::underlying_type_t <EProblemFields>;
+		return static_cast<EProblemFields>(static_cast<T>(_lhs) | static_cast<T>(_rhs));
 	}
 
-	inline EStatistics& operator |= (EStatistics& _lhs, EStatistics _rhs)
+	inline EProblemFields& operator |= (EProblemFields& _lhs, EProblemFields _rhs)
 	{
 		_lhs = _lhs | _rhs;
 		return _lhs;
 	}
 
-	inline EStatistics operator & (EStatistics _lhs, EStatistics _rhs)
+	inline EProblemFields operator & (EProblemFields _lhs, EProblemFields _rhs)
 	{
-		using T = std::underlying_type_t <EStatistics>;
-		return static_cast<EStatistics>(static_cast<T>(_lhs) & static_cast<T>(_rhs));
+		using T = std::underlying_type_t <EProblemFields>;
+		return static_cast<EProblemFields>(static_cast<T>(_lhs) & static_cast<T>(_rhs));
 	}
 
-	inline EStatistics& operator &= (EStatistics& _lhs, EStatistics _rhs)
+	inline EProblemFields& operator &= (EProblemFields& _lhs, EProblemFields _rhs)
 	{
 		_lhs = _lhs & _rhs;
 		return _lhs;
 	}
 
-	inline EStatistics operator ~ (EStatistics _x)
+	inline EProblemFields operator ~ (EProblemFields _x)
 	{
-		using T = std::underlying_type_t <EStatistics>;
-		return static_cast<EStatistics>(~static_cast<T>(_x));
+		using T = std::underlying_type_t <EProblemFields>;
+		return static_cast<EProblemFields>(~static_cast<T>(_x));
 	}
 
-	inline bool has (EStatistics _src, EStatistics _what)
+	inline bool has (EProblemFields _src, EProblemFields _what)
 	{
 		return (_src & _what) == _what;
 	}
 
-	const EStatistics problemSize{ EStatistics::IndicesCount | EStatistics::QueriesCount };
-	const EStatistics successAndTime{ EStatistics::Success | EStatistics::TotalTime };
-	const EStatistics selectionCutsCountAndTime{ EStatistics::SelectionCutCount | EStatistics::SelectionCutTime };
-	const EStatistics sizeCutsCountAndTime{ EStatistics::SizeCutCount | EStatistics::SizeCutTime };
-	const EStatistics cutsCountAndTime{ selectionCutsCountAndTime | sizeCutsCountAndTime };
-	const EStatistics cutsCount{ EStatistics::SizeCutCount | EStatistics::SelectionCutCount };
-	const EStatistics cutsTime{ EStatistics::SizeCutTime | EStatistics::SelectionCutTime };
-	const EStatistics cutsStatistics{ successAndTime | cutsCountAndTime | EStatistics::Nodes };
-	const EStatistics modelStatistics{ successAndTime | EStatistics::Variables | EStatistics::Constraints };
-	const EStatistics cutsAndModelStatistics{ cutsStatistics | modelStatistics };
-	const EStatistics allProblemStatistics{ problemSize | EStatistics::IndexFixedCostDev | EStatistics::IndexFixedCostRatio | EStatistics::IndexQueryCostRatio | EStatistics::IndexSizeDev | EStatistics::MaxSizeRatio | EStatistics::QueryCostDev };
-	const EStatistics allStatistics{ allProblemStatistics | cutsAndModelStatistics };
+	const EProblemFields problemNoFields{ 0 };
+	const EProblemFields problemSizeFields{ EProblemFields::nQueries | EProblemFields::nIndices };
+	const EProblemFields problemRatioFields{ EProblemFields::nIndicesMaxSize | EProblemFields::indexFixedCostRatio | EProblemFields::indexQueryCostRatio };
+	const EProblemFields problemDevFields{ EProblemFields::indexFixedCostDev | EProblemFields::indexSizeDev | EProblemFields::queryCostDev };
+	const EProblemFields problemAllFields{ problemSizeFields | problemRatioFields | problemDevFields };
 
-	void test (const ImmutableArray<RandomProblemOptions>& _problems, const ImmutableArray<Options>& _configs, std::ostream& _csv, EStatistics _statistics, std::ostream& _progress = std::cout, int _nTests = 1, unsigned int _seed = 0);
+	enum class ESolutionFields
+	{
+		nConstraints = 1 << 0,
+		nNodes = 1 << 1,
+		nSelectionCuts = 1 << 2,
+		nSizeCuts = 1 << 3,
+		nVariables = 1 << 4,
+		selectionCutElapsedTime = 1 << 5,
+		sizeCutElapsedTime = 1 << 6,
+		totalElapsedTime = 1 << 7,
+		succeeded = 1 << 8,
+	};
 
-	ImmutableArray<double> range (double _min, double _max, int _count);
+	inline ESolutionFields operator | (ESolutionFields _lhs, ESolutionFields _rhs)
+	{
+		using T = std::underlying_type_t <ESolutionFields>;
+		return static_cast<ESolutionFields>(static_cast<T>(_lhs) | static_cast<T>(_rhs));
+	}
 
-	ImmutableArray<int> range (int _min, int _max, int _count);
+	inline ESolutionFields& operator |= (ESolutionFields& _lhs, ESolutionFields _rhs)
+	{
+		_lhs = _lhs | _rhs;
+		return _lhs;
+	}
 
-	ImmutableArray<RandomProblemOptions> explodeMaxSizeRatio (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _maxSizeRatios);
+	inline ESolutionFields operator & (ESolutionFields _lhs, ESolutionFields _rhs)
+	{
+		using T = std::underlying_type_t <ESolutionFields>;
+		return static_cast<ESolutionFields>(static_cast<T>(_lhs) & static_cast<T>(_rhs));
+	}
 
-	ImmutableArray<RandomProblemOptions> explodeIndicesCount (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<int> _indexCounts);
+	inline ESolutionFields& operator &= (ESolutionFields& _lhs, ESolutionFields _rhs)
+	{
+		_lhs = _lhs & _rhs;
+		return _lhs;
+	}
 
-	ImmutableArray<RandomProblemOptions> explodeQueryCount (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<int> _queryCounts);
+	inline ESolutionFields operator ~ (ESolutionFields _x)
+	{
+		using T = std::underlying_type_t <ESolutionFields>;
+		return static_cast<ESolutionFields>(~static_cast<T>(_x));
+	}
 
-	ImmutableArray<RandomProblemOptions> explodeIndicesAndQueryCount (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<int> _indicesCounts, ImmutableArray<double> _queriesRatios);
+	inline bool has (ESolutionFields _src, ESolutionFields _what)
+	{
+		return (_src & _what) == _what;
+	}
 
-	ImmutableArray<RandomProblemOptions> explodeIndexFixedCostRatio (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _fixedCostRatios);
+	const ESolutionFields solutionNoFields{ 0 };
+	const ESolutionFields solutionSizeFields{ ESolutionFields::nNodes | ESolutionFields::totalElapsedTime };
+	const ESolutionFields solutionModelFields{ ESolutionFields::nConstraints | ESolutionFields::nVariables };
+	const ESolutionFields solutionTimeFields{ ESolutionFields::totalElapsedTime | ESolutionFields::selectionCutElapsedTime | ESolutionFields::sizeCutElapsedTime };
+	const ESolutionFields solutionSelectionCutFields{ ESolutionFields::selectionCutElapsedTime | ESolutionFields::nSelectionCuts };
+	const ESolutionFields solutionSizeCutFields{ ESolutionFields::sizeCutElapsedTime | ESolutionFields::nSizeCuts };
+	const ESolutionFields solutionCutTimeFields{ ESolutionFields::selectionCutElapsedTime | ESolutionFields::sizeCutElapsedTime };
+	const ESolutionFields solutionCutCountFields{ ESolutionFields::nSelectionCuts | ESolutionFields::nSizeCuts };
+	const ESolutionFields solutionCutFields{ solutionSelectionCutFields | solutionSizeCutFields };
+	const ESolutionFields solutionAllFields{ solutionSizeFields | solutionModelFields | solutionCutFields | ESolutionFields::succeeded };
 
-	ImmutableArray<RandomProblemOptions> explodeIndexQueryCostRatio (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _queryCostRatios);
+	struct ConfigResult final
+	{
+		bool succeeded;
+		Solution::Statistics statistics;
+	};
 
-	ImmutableArray<RandomProblemOptions> explodeIndexFixedCostDev (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _indexFixedCostdevs);
+	struct ProblemResult final
+	{
+		RandomProblemOptions problem;
+		ImmutableArray<ConfigResult> configs;
+	};
 
-	ImmutableArray<RandomProblemOptions> explodeQueryCostDev (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _queryCostDevs);
+	extern std::ostream nullStream;
 
-	ImmutableArray<RandomProblemOptions> explodeIndexSizeDev (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _indexSizeDevs);
+	ImmutableArray<ProblemResult> test (const ImmutableArray<RandomProblemOptions>& _problems, const ImmutableArray<Options>& _options, size_t _nTests = 1, unsigned int _seed = 0, std::ostream& _out = std::cout, Real _costTolerance = 0.0000001);
+
+	EProblemFields getChangingProblemFields (ImmutableArray<ProblemResult> _results);
+	ESolutionFields getChangingSolutionFields (ImmutableArray<ConfigResult> _results);
+	ESolutionFields getChangingSolutionFields (ImmutableArray<ProblemResult> _results);
+
+	void toCSV (ImmutableArray<ProblemResult> _results, EProblemFields _problemFields, ESolutionFields _solutionFields, std::ostream& _out);
+
+	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out);
 
 }
 

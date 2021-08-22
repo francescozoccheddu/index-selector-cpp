@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <random>
 #include <cmath>
+#include <string>
+#include <vector>
 
 namespace IndexSelector::App
 {
@@ -17,7 +19,10 @@ namespace IndexSelector::App
 		}
 	};
 
-	void test (const ImmutableArray<RandomProblemOptions>& _problems, const ImmutableArray<Options>& _configs, std::ostream& _csv, EStatistics _statistics, std::ostream& _progress, int _nTests, unsigned int _seed)
+	static NullBuffer nullBuffer{};
+	std::ostream nullStream{ &nullBuffer };
+
+	ImmutableArray<ProblemResult> test (const ImmutableArray<RandomProblemOptions>& _problems, const ImmutableArray<Options>& _configs, size_t _nTests, unsigned int _seed, std::ostream& _out, Real _costTolerance)
 	{
 		if (_nTests < 0)
 		{
@@ -25,240 +30,232 @@ namespace IndexSelector::App
 		}
 		std::mt19937 re{ _seed };
 		std::uniform_int_distribution<unsigned int>  rs (0, 100000);
-		NullBuffer nullBuffer{};
-		std::ostream nullStream{ &nullBuffer };
-		std::ostream& csv{ _csv ? _csv : nullStream };
-		std::ostream& prg{ _progress ? _progress : nullStream };
-		csv << "i";
-		if (has (_statistics, EStatistics::IndicesCount))
-			csv << ",nIndices";
-		if (has (_statistics, EStatistics::QueriesCount))
-			csv << ",nQueries";
-		if (has (_statistics, EStatistics::IndexFixedCostDev))
-			csv << ",indexFixedCostDev";
-		if (has (_statistics, EStatistics::IndexFixedCostRatio))
-			csv << ",indexFixedCostRatio";
-		if (has (_statistics, EStatistics::IndexQueryCostRatio))
-			csv << ",indexQueryCostRatio";
-		if (has (_statistics, EStatistics::IndexSizeDev))
-			csv << ",indexSizeDev";
-		if (has (_statistics, EStatistics::MaxSizeRatio))
-			csv << ",maxSizeRatio";
-		if (has (_statistics, EStatistics::QueryCostDev))
-			csv << ",queryCostDev";
-		for (int c{ 1 }; c <= _configs.size (); c++)
-		{
-			if (has (_statistics, EStatistics::Success))
-				csv << ",succeeded_" << c;
-			if (has (_statistics, EStatistics::Variables))
-				csv << ",nVariables_" << c;
-			if (has (_statistics, EStatistics::Constraints))
-				csv << ",nConstraints_" << c;
-			if (has (_statistics, EStatistics::Nodes))
-				csv << ",nNodes_" << c;
-			if (has (_statistics, EStatistics::TotalTime))
-				csv << ",totalElapsedTime_" << c;
-			if (has (_statistics, EStatistics::SelectionCutTime))
-				csv << ",selectionCutElapsedTime_" << c;
-			if (has (_statistics, EStatistics::SizeCutTime))
-				csv << ",sizeCutElapsedTime_" << c;
-			if (has (_statistics, EStatistics::SelectionCutCount))
-				csv << ",nSelectionCuts_" << c;
-			if (has (_statistics, EStatistics::SizeCutCount))
-				csv << ",nSizeCuts_" << c;
-		}
-		csv << std::endl;
 		std::vector<Problem> problems (_nTests);
-		for (int ip{}; ip < _problems.size (); ip++)
+		std::vector<Real> costs (_nTests);
+		std::vector<bool> costInitialized (_nTests);
+		ProblemResult* const problemResults{ new ProblemResult[_problems.size ()] };
+		for (size_t ip{}; ip < _problems.size (); ip++)
 		{
-			for (int it{}; it < _nTests; it++)
+			ConfigResult* const configResults{ new ConfigResult[_configs.size ()] };
+			problemResults[ip] = { _problems[ip], ImmutableArray<ConfigResult>::takeOwnership (configResults, _configs.size ()) };
+			for (size_t it{}; it < _nTests; it++)
 			{
 				problems[it] = randomProblem (_problems[ip], rs (re));
+				costInitialized[it] = false;
 			}
-			csv << ip;
-			if (has (_statistics, EStatistics::IndicesCount))
-				csv << "," << _problems[ip].nIndices;
-			if (has (_statistics, EStatistics::QueriesCount))
-				csv << "," << _problems[ip].nQueries;
-			if (has (_statistics, EStatistics::IndexFixedCostDev))
-				csv << "," << _problems[ip].indexFixedCostDev;
-			if (has (_statistics, EStatistics::IndexFixedCostRatio))
-				csv << "," << _problems[ip].indexFixedCostRatio;
-			if (has (_statistics, EStatistics::IndexQueryCostRatio))
-				csv << "," << _problems[ip].indexQueryCostRatio;
-			if (has (_statistics, EStatistics::IndexSizeDev))
-				csv << "," << _problems[ip].indexSizeDev;
-			if (has (_statistics, EStatistics::MaxSizeRatio))
-				csv << "," << _problems[ip].maxSizeRatio;
-			if (has (_statistics, EStatistics::QueryCostDev))
-				csv << "," << _problems[ip].queryCostDev;
-			for (int ic{}; ic < _configs.size (); ic++)
+			for (size_t ic{}; ic < _configs.size (); ic++)
 			{
-				size_t nNodes{}, nVariables{}, nConstraints{}, nSelectionCuts{}, nSizeCuts{};
-				double totalElapsedTime{}, selectionCutElapsedTime{}, sizeCutElapsedTime{};
-				int succeeded{};
-				for (int it{}; it < _nTests; it++)
+				ConfigResult& configResult{ configResults[ic] };
+				configResult.succeeded = true;
+				for (size_t it{}; it < _nTests; it++)
 				{
-					prg << "[" << ip * _nTests * _configs.size() + ic * _nTests + it << "/" << _nTests * _configs.size () * _problems.size () << "]";
-					prg << " Problem " << ip + 1 << "/" << _problems.size ();
-					prg << " Config " << ic + 1 << "/" << _configs.size ();
-					prg << " Test " << it + 1 << "/" << _nTests;
-					prg << " ... ";
+					_out << "[" << ip * _nTests * _configs.size () + ic * _nTests + it << "/" << _nTests * _configs.size () * _problems.size () << "]";
+					if (_problems.size () > 1)
+						_out << " Problem " << ip + 1 << "/" << _problems.size ();
+					if (_configs.size () > 1)
+						_out << " Config " << ic + 1 << "/" << _configs.size ();
+					if (_nTests > 1)
+						_out << " Test " << it + 1 << "/" << _nTests;
+					_out << " ... ";
 					Solution s{ solve (problems[it],_configs[ic]) };
-					nNodes += s.statistics.nNodes;
-					nVariables += s.statistics.nVariables;
-					nConstraints += s.statistics.nConstraints;
-					nSelectionCuts += s.statistics.nSelectionCuts;
-					nSizeCuts += s.statistics.nSizeCuts;
-					totalElapsedTime += s.statistics.totalElapsedTime;
-					selectionCutElapsedTime += s.statistics.selectionCutElapsedTime;
-					sizeCutElapsedTime += s.statistics.sizeCutElapsedTime;
-					succeeded += s.succeeded ? 1 : 0;
-					prg << s.statistics.totalElapsedTime << "s" << std::endl;
+					if (s.succeeded)
+					{
+						if (costInitialized[it])
+						{
+							if (std::abs (costs[it] - s.cost) > _costTolerance)
+							{
+								throw std::runtime_error ("Cost does not match");
+							}
+						}
+						else
+						{
+							costInitialized[it] = true;
+							costs[it] = s.cost;
+						}
+					}
+					configResult.succeeded &= s.succeeded;
+					configResult.statistics.nConstraints += s.statistics.nConstraints;
+					configResult.statistics.nNodes += s.statistics.nNodes;
+					configResult.statistics.nSelectionCuts += s.statistics.nSelectionCuts;
+					configResult.statistics.nSizeCuts += s.statistics.nSizeCuts;
+					configResult.statistics.nVariables += s.statistics.nVariables;
+					configResult.statistics.selectionCutElapsedTime += s.statistics.selectionCutElapsedTime;
+					configResult.statistics.sizeCutElapsedTime += s.statistics.sizeCutElapsedTime;
+					configResult.statistics.totalElapsedTime += s.statistics.totalElapsedTime;
+					_out << s.statistics.totalElapsedTime << "s" << std::endl;
 				}
-				if (has (_statistics, EStatistics::Success))
-					csv << "," << succeeded;
-				if (has (_statistics, EStatistics::Variables))
-					csv << "," << nVariables;
-				if (has (_statistics, EStatistics::Constraints))
-					csv << "," << nConstraints;
-				if (has (_statistics, EStatistics::Nodes))
-					csv << "," << nNodes;
-				if (has (_statistics, EStatistics::TotalTime))
-					csv << "," << totalElapsedTime;
-				if (has (_statistics, EStatistics::SelectionCutTime))
-					csv << "," << selectionCutElapsedTime;
-				if (has (_statistics, EStatistics::SizeCutTime))
-					csv << "," << sizeCutElapsedTime;
-				if (has (_statistics, EStatistics::SelectionCutCount))
-					csv << "," << nSelectionCuts;
-				if (has (_statistics, EStatistics::SizeCutCount))
-					csv << "," << nSizeCuts;
 			}
-			csv << std::endl;
 		}
-
+		return ImmutableArray<ProblemResult>::takeOwnership (problemResults, _problems.size ());
 	}
 
-	ImmutableArray<double> range (double _min, double _max, int _count)
+	template<typename TObject, typename TGetter>
+	bool isChanging (ImmutableArray <TObject> _objects, TGetter _getter)
 	{
-		if (_count < 0)
+		if (_objects.size () > 0)
 		{
-			throw new std::invalid_argument ("Negative count");
-		}
-		double* const r{ new double[_count] };
-		for (int i{}; i < _count; i++)
-		{
-			r[i] = (_max - _min) * i / std::max<int> (_count - 1, 0) + _min;
-		}
-		return ImmutableArray<double>::takeOwnership (r, _count);
-	}
-
-	ImmutableArray<int> range (int _min, int _max, int _count)
-	{
-		if (_count < 0)
-		{
-			throw new std::invalid_argument ("Negative count");
-		}
-		int* const r{ new int[_count] };
-		for (int i{}; i < _count; i++)
-		{
-			r[i] = static_cast<int>(std::round ((static_cast<double>(_max) - _min)) * i / std::max<int> (_count - 1, 0) + _min);
-		}
-		return ImmutableArray<int>::takeOwnership (r, _count);
-	}
-
-	template<typename TSetter>
-	ImmutableArray<RandomProblemOptions> explode (ImmutableArray<RandomProblemOptions> _options, int _count, TSetter _setter)
-	{
-		if (_count < 0)
-		{
-			throw new std::invalid_argument ("Negative count");
-		}
-		RandomProblemOptions* const r{ new RandomProblemOptions[_count * _options.size ()] };
-		int fi{ };
-		for (RandomProblemOptions o : _options)
-		{
-			for (int c{}; c < _count; c++)
+			auto value{ _getter (_objects[0]) };
+			for (size_t i{ 1 }; i < _objects.size (); i++)
 			{
-				_setter (o, c);
-				r[fi++] = o;
+				if (value != _getter (_objects[i]))
+				{
+					return true;
+				}
 			}
 		}
-		return ImmutableArray<RandomProblemOptions>::takeOwnership (r, _count * _options.size ());
+		return false;
 	}
 
-	ImmutableArray<RandomProblemOptions> explodeMaxSizeRatio (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _maxSizeRatios)
+	EProblemFields getChangingProblemFields (ImmutableArray<ProblemResult> _results)
 	{
-		return explode (_options, _maxSizeRatios.size (), [_maxSizeRatios] (RandomProblemOptions& _o, int _c)
+		EProblemFields fields{ problemNoFields };
+		fields |= isChanging (_results, [] (const ProblemResult& _result)
 		{
-			_o.maxSizeRatio = _maxSizeRatios[_c];
-		});
+			return _result.problem.indexFixedCostDev;
+		}) ? EProblemFields::indexFixedCostDev : problemNoFields;
+		fields |= isChanging (_results, [] (const ProblemResult& _result)
+		{
+			return _result.problem.indexFixedCostRatio;
+		}) ? EProblemFields::indexFixedCostRatio : problemNoFields;
+		fields |= isChanging (_results, [] (const ProblemResult& _result)
+		{
+			return _result.problem.indexQueryCostRatio;
+		}) ? EProblemFields::indexQueryCostRatio : problemNoFields;
+		fields |= isChanging (_results, [] (const ProblemResult& _result)
+		{
+			return _result.problem.indexSizeDev;
+		}) ? EProblemFields::indexSizeDev : problemNoFields;
+		fields |= isChanging (_results, [] (const ProblemResult& _result)
+		{
+			return _result.problem.nIndices;
+		}) ? EProblemFields::nIndices : problemNoFields;
+		fields |= isChanging (_results, [] (const ProblemResult& _result)
+		{
+			return _result.problem.nIndicesMaxSize;
+		}) ? EProblemFields::nIndicesMaxSize : problemNoFields;
+		fields |= isChanging (_results, [] (const ProblemResult& _result)
+		{
+			return _result.problem.nQueries;
+		}) ? EProblemFields::nQueries : problemNoFields;
+		fields |= isChanging (_results, [] (const ProblemResult& _result)
+		{
+			return _result.problem.queryCostDev;
+		}) ? EProblemFields::queryCostDev : problemNoFields;
+		return fields;
 	}
 
-	ImmutableArray<RandomProblemOptions> explodeIndicesCount (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<int> _indexCounts)
+	ESolutionFields getChangingSolutionFields (ImmutableArray<ProblemResult> _results)
 	{
-		return explode (_options, _indexCounts.size (), [_indexCounts] (RandomProblemOptions& _o, int _c)
+		ESolutionFields fields{ solutionNoFields };
+		for (const ProblemResult& result : _results)
 		{
-			_o.nIndices = _indexCounts[_c];
-		});
+			fields |= getChangingSolutionFields (result.configs);
+		}
+		return fields;
 	}
 
-	ImmutableArray<RandomProblemOptions> explodeQueryCount (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<int> _queryCounts)
+	ESolutionFields getChangingSolutionFields (ImmutableArray<ConfigResult> _results)
 	{
-		return explode (_options, _queryCounts.size (), [_queryCounts] (RandomProblemOptions& _o, int _c)
+		ESolutionFields fields{ solutionNoFields };
+		fields |= isChanging (_results, [] (const ConfigResult& _result)
 		{
-			_o.nQueries = _queryCounts[_c];
-		});
+			return _result.succeeded;
+		}) ? ESolutionFields::succeeded : solutionNoFields;
+		fields |= isChanging (_results, [] (const ConfigResult& _result)
+		{
+			return _result.statistics.nConstraints;
+		}) ? ESolutionFields::succeeded : solutionNoFields;
+		fields |= isChanging (_results, [] (const ConfigResult& _result)
+		{
+			return _result.statistics.nNodes;
+		}) ? ESolutionFields::nNodes : solutionNoFields;
+		fields |= isChanging (_results, [] (const ConfigResult& _result)
+		{
+			return _result.statistics.nSelectionCuts;
+		}) ? ESolutionFields::nSelectionCuts : solutionNoFields;
+		fields |= isChanging (_results, [] (const ConfigResult& _result)
+		{
+			return _result.statistics.nSizeCuts;
+		}) ? ESolutionFields::nSizeCuts : solutionNoFields;
+		fields |= isChanging (_results, [] (const ConfigResult& _result)
+		{
+			return _result.statistics.nVariables;
+		}) ? ESolutionFields::nVariables : solutionNoFields;
+		fields |= isChanging (_results, [] (const ConfigResult& _result)
+		{
+			return _result.statistics.selectionCutElapsedTime;
+		}) ? ESolutionFields::selectionCutElapsedTime : solutionNoFields;
+		fields |= isChanging (_results, [] (const ConfigResult& _result)
+		{
+			return _result.statistics.sizeCutElapsedTime;
+		}) ? ESolutionFields::sizeCutElapsedTime : solutionNoFields;
+		fields |= isChanging (_results, [] (const ConfigResult& _result)
+		{
+			return _result.statistics.totalElapsedTime;
+		}) ? ESolutionFields::totalElapsedTime : solutionNoFields;
+		return fields;
 	}
 
-	ImmutableArray<RandomProblemOptions> explodeIndicesAndQueryCount (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<int> _indicesCounts, ImmutableArray<double> _queriesRatios)
+	void toCSV (ImmutableArray<ProblemResult> _results, EProblemFields _problemFields, ESolutionFields _solutionFields, std::ostream& _out)
 	{
-		_options = explodeIndicesCount (_options, _indicesCounts);
-		return explode (_options, _queriesRatios.size (), [_queriesRatios] (RandomProblemOptions& _o, int _c)
+		const size_t nc{ _results.size () == 0 ? 0 : _results[0].configs.size () };
+		_out << "i";
+		if (has (_problemFields, EProblemFields::nQueries)) _out << ",nQueries";
+		if (has (_problemFields, EProblemFields::nIndices)) _out << ",nIndices";
+		if (has (_problemFields, EProblemFields::nIndicesMaxSize)) _out << ",nIndicesMaxSize";
+		if (has (_problemFields, EProblemFields::indexFixedCostRatio)) _out << ",indexFixedCostRatio";
+		if (has (_problemFields, EProblemFields::indexQueryCostRatio)) _out << ",indexQueryCostRatio";
+		if (has (_problemFields, EProblemFields::indexFixedCostDev)) _out << ",indexFixedCostDev";
+		if (has (_problemFields, EProblemFields::indexSizeDev)) _out << ",indexSizeDev";
+		if (has (_problemFields, EProblemFields::queryCostDev)) _out << ",queryCostDev";
+		for (size_t c{ 1 }; c <= nc; c++)
 		{
-			_o.nQueries = static_cast<int>(std::round (_o.nIndices * _queriesRatios[_c]));
-		});
+			if (has (_solutionFields, ESolutionFields::nConstraints)) _out << ",nConstraints_" << c;
+			if (has (_solutionFields, ESolutionFields::nNodes)) _out << ",nNodes_" << c;
+			if (has (_solutionFields, ESolutionFields::nSelectionCuts)) _out << ",nSelectionCuts_" << c;
+			if (has (_solutionFields, ESolutionFields::nSizeCuts)) _out << ",nSizeCuts_" << c;
+			if (has (_solutionFields, ESolutionFields::nVariables)) _out << ",nVariables_" << c;
+			if (has (_solutionFields, ESolutionFields::selectionCutElapsedTime)) _out << ",selectionCutElapsedTime_" << c;
+			if (has (_solutionFields, ESolutionFields::sizeCutElapsedTime)) _out << ",sizeCutElapsedTime_" << c;
+			if (has (_solutionFields, ESolutionFields::totalElapsedTime)) _out << ",totalElapsedTime_" << c;
+			if (has (_solutionFields, ESolutionFields::succeeded)) _out << ",succeeded_" << c;
+		}
+		_out << std::endl;
+		size_t i{};
+		for (const ProblemResult& problem : _results)
+		{
+			if (problem.configs.size () != nc)
+			{
+				throw std::invalid_argument ("Unmatched number of configs");
+			}
+			_out << i++;
+			if (has (_problemFields, EProblemFields::nQueries)) _out << "," << problem.problem.nQueries;
+			if (has (_problemFields, EProblemFields::nIndices)) _out << "," << problem.problem.nIndices;
+			if (has (_problemFields, EProblemFields::nIndicesMaxSize)) _out << "," << problem.problem.nIndicesMaxSize;
+			if (has (_problemFields, EProblemFields::indexFixedCostRatio)) _out << "," << problem.problem.indexFixedCostRatio;
+			if (has (_problemFields, EProblemFields::indexQueryCostRatio)) _out << "," << problem.problem.indexQueryCostRatio;
+			if (has (_problemFields, EProblemFields::indexFixedCostDev)) _out << "," << problem.problem.indexFixedCostDev;
+			if (has (_problemFields, EProblemFields::indexSizeDev)) _out << "," << problem.problem.indexSizeDev;
+			if (has (_problemFields, EProblemFields::queryCostDev)) _out << "," << problem.problem.queryCostDev;
+			for (const ConfigResult& config : problem.configs)
+			{
+				if (has (_solutionFields, ESolutionFields::nConstraints)) _out << "," << config.statistics.nConstraints;
+				if (has (_solutionFields, ESolutionFields::nNodes)) _out << "," << config.statistics.nNodes;
+				if (has (_solutionFields, ESolutionFields::nSelectionCuts)) _out << "," << config.statistics.nSelectionCuts;
+				if (has (_solutionFields, ESolutionFields::nSizeCuts)) _out << "," << config.statistics.nSizeCuts;
+				if (has (_solutionFields, ESolutionFields::nVariables)) _out << "," << config.statistics.nVariables;
+				if (has (_solutionFields, ESolutionFields::selectionCutElapsedTime)) _out << "," << config.statistics.selectionCutElapsedTime;
+				if (has (_solutionFields, ESolutionFields::sizeCutElapsedTime)) _out << "," << config.statistics.sizeCutElapsedTime;
+				if (has (_solutionFields, ESolutionFields::totalElapsedTime)) _out << "," << config.statistics.totalElapsedTime;
+				if (has (_solutionFields, ESolutionFields::succeeded)) _out << "," << config.succeeded;
+			}
+			_out << std::endl;
+		}
 	}
 
-	ImmutableArray<RandomProblemOptions> explodeIndexFixedCostRatio (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _fixedCostRatios)
+	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out)
 	{
-		return explode (_options, _fixedCostRatios.size (), [_fixedCostRatios] (RandomProblemOptions& _o, int _c)
-		{
-			_o.indexFixedCostRatio = _fixedCostRatios[_c];
-		});
-	}
-
-	ImmutableArray<RandomProblemOptions> explodeIndexQueryCostRatio (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _queryCostRatios)
-	{
-		return explode (_options, _queryCostRatios.size (), [_queryCostRatios] (RandomProblemOptions& _o, int _c)
-		{
-			_o.indexQueryCostRatio = _queryCostRatios[_c];
-		});
-	}
-
-	ImmutableArray<RandomProblemOptions> explodeIndexFixedCostDev (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _indexFixedCostdevs)
-	{
-		return explode (_options, _indexFixedCostdevs.size (), [_indexFixedCostdevs] (RandomProblemOptions& _o, int _c)
-		{
-			_o.indexFixedCostDev = _indexFixedCostdevs[_c];
-		});
-	}
-
-	ImmutableArray<RandomProblemOptions> explodeQueryCostDev (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _queryCostDevs)
-	{
-		return explode (_options, _queryCostDevs.size (), [_queryCostDevs] (RandomProblemOptions& _o, int _c)
-		{
-			_o.queryCostDev = _queryCostDevs[_c];
-		});
-	}
-
-	ImmutableArray<RandomProblemOptions> explodeIndexSizeDev (ImmutableArray<RandomProblemOptions> _options, ImmutableArray<double> _indexSizeDevs)
-	{
-		return explode (_options, _indexSizeDevs.size (), [_indexSizeDevs] (RandomProblemOptions& _o, int _c)
-		{
-			_o.indexSizeDev = _indexSizeDevs[_c];
-		});
+		toCSV (_results, getChangingProblemFields (_results), getChangingSolutionFields (_results), _out);
 	}
 
 }

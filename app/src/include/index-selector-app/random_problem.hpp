@@ -10,14 +10,16 @@ namespace IndexSelector::App
 	struct RandomProblemOptions final
 	{
 
-		int nQueries{ 20 };
-		int nIndices{ 30 };
-		double indexSizeDev{ 10 };
-		double maxSizeRatio{ 0.1 };
-		double indexFixedCostDev{ 10 };
-		double indexFixedCostRatio{ 0.4 };
-		double queryCostDev{ 10 };
-		double indexQueryCostRatio{ 0.9 };
+		int nQueries{ 50 };
+		int nIndices{ 40 };
+
+		double nIndicesMaxSize{ 5 };
+		double indexFixedCostRatio{ 0.1 };
+		double indexQueryCostRatio{ 0.75 };
+
+		double indexFixedCostDev{ 5 };
+		double indexSizeDev{ 5 };
+		double queryCostDev{ 5 };
 
 		void validate () const;
 

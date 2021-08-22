@@ -20,9 +20,9 @@ namespace IndexSelector::App
 		{
 			throw std::out_of_range ("Index size deviance must be at least 1");
 		}
-		if (maxSizeRatio < 0 or maxSizeRatio > 1)
+		if (nIndicesMaxSize < 0)
 		{
-			throw std::out_of_range ("Max size ratio must fall in range [0, 1]");
+			throw std::out_of_range ("Max size indices count cannot be negative");
 		}
 		if (indexFixedCostDev < 1)
 		{
@@ -75,7 +75,7 @@ namespace IndexSelector::App
 				index.size = static_cast<Real>(totalSize += sr (re));
 			}
 			problem.indices = ImmutableArray<Index>::takeOwnership (idxs, _options.nIndices);
-			problem.maxSize = static_cast<Real>((totalSize + (sr.a () + sr.b ()) / 2.0 * _options.nIndices) / 2.0 * _options.maxSizeRatio);
+			problem.maxSize = static_cast<Real>((sr.a () + sr.b ()) / 2.0 * _options.nIndicesMaxSize);
 		}
 		return problem;
 	}
