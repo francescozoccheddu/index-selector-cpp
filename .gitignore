@@ -3,3 +3,4 @@
 /lib/out
 /.vs
 /lib/cplex.cmake
+/CMakeSettings.json

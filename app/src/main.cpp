@@ -12,35 +12,28 @@ int main ()
 	std::ofstream csv;
 	csv.open ("C:/Users/franc/desktop/results.csv");
 	ImmutableArray<RandomProblemOptions> problems{ RandomProblemOptions{} };
-	problems = explodeIndicesAndQueryCount (problems, { 10, 20, 50, 100, 150 }, { 1 });
-	problems = explodeMaxSizeRatio (problems, { 0.05, 0.1, 0.25, 0.5 });
+	problems = explodeIndicesAndQueryCount (problems, { 150, 225, 300 }, { 5.0 / 3.0 });
+	problems = explodeMaxSizeRatio (problems, { 0.2 });
+	problems = explodeIndexQueryCostRatio (problems, { 0.5 });
+	problems = explodeIndexFixedCostRatio (problems, { 0.2 });
 	ImmutableArray<Options> configs{
 		Options{
-				.enableSelectionCuts{true},
+				.timeLimit{60 * 5},
+				.enableSelectionCuts{false},
 				.sizeCutMode{Options::ESizeCutMode::None},
 				.sizeCutManagement{Options::ECutManagement::CanFilter},
 				.additionalCuts{Options::EAdditionalCuts::None}},
 		Options{
+				.timeLimit{60 * 5},
 				.enableSelectionCuts{true},
 				.sizeCutMode{Options::ESizeCutMode::Optimal},
-				.sizeCutManagement{Options::ECutManagement::CanFilter},
-				.additionalCuts{Options::EAdditionalCuts::None}},
-		Options{
-				.enableSelectionCuts{true},
-				.sizeCutMode{Options::ESizeCutMode::Heuristic},
-				.nMaxHeuristicSizeCutVars{6},
-				.sizeCutManagement{Options::ECutManagement::CanFilter},
-				.additionalCuts{Options::EAdditionalCuts::None}},
-		Options{
-				.enableSelectionCuts{true},
-				.sizeCutMode{Options::ESizeCutMode::Heuristic},
-				.nMaxHeuristicSizeCutVars{10},
+				.nMaxHeuristicSizeCutVars{7},
 				.sizeCutManagement{Options::ECutManagement::CanFilter},
 				.additionalCuts{Options::EAdditionalCuts::None}
 		}
 	};
-	EStatistics statistics{ cutsAndModelStatistics | problemSize | EStatistics::MaxSizeRatio };
-	test (problems, configs, csv, statistics, std::cout, 1, 1);
+	EStatistics statistics{ cutsAndModelStatistics | problemSize | EStatistics::MaxSizeRatio | EStatistics::IndexQueryCostRatio | EStatistics::IndexFixedCostRatio };
+	test (problems, configs, csv, statistics, std::cout, 1, 3);
 	csv.close ();
 	return 0;
 }
