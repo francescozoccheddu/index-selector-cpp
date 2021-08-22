@@ -61,6 +61,7 @@ namespace IndexSelector::App
 			const std::uniform_real_distribution fcr = std::uniform_real_distribution<double>{ _options.indexFixedCostRatio,  _options.indexFixedCostDev * _options.indexFixedCostRatio };
 			const std::uniform_real_distribution sr = std::uniform_real_distribution<double>{ 1,  _options.indexSizeDev };
 			Index* const idxs = new Index[_options.nIndices];
+			double totalSize{};
 			for (int i{ 0 }; i < _options.nIndices; i++)
 			{
 				Index& index = idxs[i];
@@ -71,10 +72,12 @@ namespace IndexSelector::App
 				}
 				index.queryCosts = ImmutableArray<Real>::takeOwnership (cs, _options.nQueries);
 				index.fixedCost = static_cast<Real>(fcr (re));
-				index.size = static_cast<Real>(sr (re));
+				double size{ sr (re) };
+				index.size = static_cast<Real>(size);
+				totalSize += size;
 			}
 			problem.indices = ImmutableArray<Index>::takeOwnership (idxs, _options.nIndices);
-			problem.maxSize = static_cast<Real>((sr.a () + sr.b ()) / 2.0 * _options.nIndicesMaxSize);
+			problem.maxSize = static_cast<Real>((totalSize / _options.nIndices + (sr.a () + sr.b ()) / 2.0) / 2.0 * _options.nIndicesMaxSize);
 		}
 		return problem;
 	}

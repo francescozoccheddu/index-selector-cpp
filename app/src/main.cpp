@@ -9,7 +9,7 @@ using namespace IndexSelector::App;
 int main ()
 {
 	ImmutableArray<RandomProblemOptions> problems{ RandomProblemOptions{} };
-	problems = explode<RandomProblemOptions, int> (problems, ImmutableArray<int>{ 80 }, [] (RandomProblemOptions& _o, int _v)
+	problems = explode<RandomProblemOptions, int> (problems, ImmutableArray<int>{ 50 }, [] (RandomProblemOptions& _o, int _v)
 	{
 		_o.nIndices = _v;
 		_o.nQueries = static_cast<int>(std::round (_v * 5.0 / 3.0));
