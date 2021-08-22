@@ -1,4 +1,5 @@
-﻿#include <index-selector-app/test.hpp>
+﻿
+#include <index-selector-app/test.hpp>
 #include <index-selector-app/test_utils.hpp>
 #include <fstream>
 
@@ -8,25 +9,25 @@ using namespace IndexSelector::App;
 int main ()
 {
 	ImmutableArray<RandomProblemOptions> problems{ RandomProblemOptions{} };
-	problems = explode<RandomProblemOptions, int> (problems, ImmutableArray<int>{ 200, 300, 400 }, [] (RandomProblemOptions& _o, int _v)
+	problems = explode<RandomProblemOptions, int> (problems, ImmutableArray<int>{ 80 }, [] (RandomProblemOptions& _o, int _v)
 	{
 		_o.nIndices = _v;
 		_o.nQueries = static_cast<int>(std::round (_v * 5.0 / 3.0));
 	});
 	ImmutableArray<Options> configs{
 		Options{
-				.timeLimit{60 * 10},
+				.timeLimit{60},
 				.enableSelectionCuts{false},
 				.sizeCutMode{Options::ESizeCutMode::None},
-				.additionalCuts{Options::EAdditionalCuts::None}},
+				.additionalCuts{Options::EAdditionalCuts::All}},
 		Options{
-				.timeLimit{60 * 10},
+				.timeLimit{60},
 				.enableSelectionCuts{true},
-				.sizeCutMode{Options::ESizeCutMode::Optimal},
+				.sizeCutMode{Options::ESizeCutMode::Heuristic},
 				.nMaxHeuristicSizeCutVars{7},
 				.nMaxSizeCuts{1},
 				.sizeCutManagement{Options::ECutManagement::CanFilter},
-				.selectionCutManagement{Options::ECutManagement::CanFilter},
+				.selectionCutManagement{Options::ECutManagement::CannotPurge},
 				.additionalCuts{Options::EAdditionalCuts::None}
 		}
 	};
@@ -40,7 +41,6 @@ int main ()
 
 
 /*
-
 #include <iostream>
 #include <iomanip>
 #include <random>
@@ -145,7 +145,7 @@ void print (const char* _pName, const TValue _value)
 
 int main ()
 {
-	const Solution s = solve (rand_problem (100, 120, 5), { .enableSelectionCuts{true}, .sizeCutMode{Options::ESizeCutMode::Heuristic}, .nMaxHeuristicSizeCutVars{7}, .nMaxSizeCuts{1},  .additionalCuts{Options::EAdditionalCuts::None} });
+	const Solution s = solve (rand_problem (100, 120, 5), { .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::None}, .nMaxHeuristicSizeCutVars{7}, .nMaxSizeCuts{1},  .additionalCuts{Options::EAdditionalCuts::None} });
 	//const Solution s = solve (m1_problem (), { .shareCutters{false}, .enableSelectionCuts{false}, .sizeCutMode{Options::ESizeCutMode::Heuristic} });
 	print ("Cost", s.cost);
 	print ("Time", s.statistics.totalElapsedTime);
