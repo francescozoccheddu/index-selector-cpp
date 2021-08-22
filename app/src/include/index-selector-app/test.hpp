@@ -17,10 +17,11 @@ namespace IndexSelector::App
 		nIndices = 1 << 1,
 		nIndicesMaxSize = 1 << 2,
 		indexFixedCostRatio = 1 << 3,
-		indexQueryCostRatio = 1 << 4,
-		indexFixedCostDev = 1 << 5,
-		indexSizeDev = 1 << 6,
-		queryCostDev = 1 << 7,
+		indexQueryMaxSpeedUp = 1 << 4,
+		nFasterQueriesPerIndex = 1 << 5,
+		indexFixedCostDev = 1 << 6,
+		indexSizeDev = 1 << 7,
+		queryCostDev = 1 << 8,
 	};
 
 	inline EProblemFields operator | (EProblemFields _lhs, EProblemFields _rhs)
@@ -60,7 +61,7 @@ namespace IndexSelector::App
 
 	const EProblemFields problemNoFields{ 0 };
 	const EProblemFields problemSizeFields{ EProblemFields::nQueries | EProblemFields::nIndices };
-	const EProblemFields problemRatioFields{ EProblemFields::nIndicesMaxSize | EProblemFields::indexFixedCostRatio | EProblemFields::indexQueryCostRatio };
+	const EProblemFields problemRatioFields{ EProblemFields::nIndicesMaxSize | EProblemFields::indexFixedCostRatio | EProblemFields::indexQueryMaxSpeedUp | EProblemFields::indexQueryMaxSpeedUp };
 	const EProblemFields problemDevFields{ EProblemFields::indexFixedCostDev | EProblemFields::indexSizeDev | EProblemFields::queryCostDev };
 	const EProblemFields problemAllFields{ problemSizeFields | problemRatioFields | problemDevFields };
 
@@ -143,7 +144,7 @@ namespace IndexSelector::App
 	ESolutionFields getChangingSolutionFields (ImmutableArray<ConfigResult> _results);
 	ESolutionFields getChangingSolutionFields (ImmutableArray<ProblemResult> _results);
 
-	void toCSV (ImmutableArray<ProblemResult> _results, EProblemFields _problemFields, ESolutionFields _solutionFields, std::ostream& _out);
+	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out, EProblemFields _problemFields, ESolutionFields _solutionFields);
 
 	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out);
 

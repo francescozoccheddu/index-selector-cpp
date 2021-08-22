@@ -13,9 +13,10 @@ namespace IndexSelector::App
 		int nQueries{ 50 };
 		int nIndices{ 40 };
 
-		double nIndicesMaxSize{ 5 };
-		double indexFixedCostRatio{ 0.1 };
-		double indexQueryCostRatio{ 0.75 };
+		double nIndicesMaxSize{ 10 };
+		double indexFixedCostRatio{ 0.3 };
+		double indexQueryMaxSpeedUp{ 5 };
+		double nFasterQueriesPerIndex{ 30 };
 
 		double indexFixedCostDev{ 5 };
 		double indexSizeDev{ 5 };

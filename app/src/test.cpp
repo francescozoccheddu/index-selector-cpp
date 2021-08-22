@@ -119,8 +119,12 @@ namespace IndexSelector::App
 		}) ? EProblemFields::indexFixedCostRatio : problemNoFields;
 		fields |= isChanging (_results, [] (const ProblemResult& _result)
 		{
-			return _result.problem.indexQueryCostRatio;
-		}) ? EProblemFields::indexQueryCostRatio : problemNoFields;
+			return _result.problem.indexQueryMaxSpeedUp;
+		}) ? EProblemFields::indexQueryMaxSpeedUp : problemNoFields;
+		fields |= isChanging (_results, [] (const ProblemResult& _result)
+		{
+			return _result.problem.nFasterQueriesPerIndex;
+		}) ? EProblemFields::nFasterQueriesPerIndex : problemNoFields;
 		fields |= isChanging (_results, [] (const ProblemResult& _result)
 		{
 			return _result.problem.indexSizeDev;
@@ -196,7 +200,7 @@ namespace IndexSelector::App
 		return fields;
 	}
 
-	void toCSV (ImmutableArray<ProblemResult> _results, EProblemFields _problemFields, ESolutionFields _solutionFields, std::ostream& _out)
+	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out, EProblemFields _problemFields, ESolutionFields _solutionFields)
 	{
 		const size_t nc{ _results.size () == 0 ? 0 : _results[0].configs.size () };
 		_out << "i";
@@ -204,7 +208,8 @@ namespace IndexSelector::App
 		if (has (_problemFields, EProblemFields::nIndices)) _out << ",nIndices";
 		if (has (_problemFields, EProblemFields::nIndicesMaxSize)) _out << ",nIndicesMaxSize";
 		if (has (_problemFields, EProblemFields::indexFixedCostRatio)) _out << ",indexFixedCostRatio";
-		if (has (_problemFields, EProblemFields::indexQueryCostRatio)) _out << ",indexQueryCostRatio";
+		if (has (_problemFields, EProblemFields::indexQueryMaxSpeedUp)) _out << ",indexQueryMaxSpeedUp";
+		if (has (_problemFields, EProblemFields::nFasterQueriesPerIndex)) _out << ",nFasterQueriesPerIndex";
 		if (has (_problemFields, EProblemFields::indexFixedCostDev)) _out << ",indexFixedCostDev";
 		if (has (_problemFields, EProblemFields::indexSizeDev)) _out << ",indexSizeDev";
 		if (has (_problemFields, EProblemFields::queryCostDev)) _out << ",queryCostDev";
@@ -233,7 +238,8 @@ namespace IndexSelector::App
 			if (has (_problemFields, EProblemFields::nIndices)) _out << "," << problem.problem.nIndices;
 			if (has (_problemFields, EProblemFields::nIndicesMaxSize)) _out << "," << problem.problem.nIndicesMaxSize;
 			if (has (_problemFields, EProblemFields::indexFixedCostRatio)) _out << "," << problem.problem.indexFixedCostRatio;
-			if (has (_problemFields, EProblemFields::indexQueryCostRatio)) _out << "," << problem.problem.indexQueryCostRatio;
+			if (has (_problemFields, EProblemFields::indexQueryMaxSpeedUp)) _out << "," << problem.problem.indexQueryMaxSpeedUp;
+			if (has (_problemFields, EProblemFields::nFasterQueriesPerIndex)) _out << "," << problem.problem.nFasterQueriesPerIndex;
 			if (has (_problemFields, EProblemFields::indexFixedCostDev)) _out << "," << problem.problem.indexFixedCostDev;
 			if (has (_problemFields, EProblemFields::indexSizeDev)) _out << "," << problem.problem.indexSizeDev;
 			if (has (_problemFields, EProblemFields::queryCostDev)) _out << "," << problem.problem.queryCostDev;
@@ -255,7 +261,7 @@ namespace IndexSelector::App
 
 	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out)
 	{
-		toCSV (_results, getChangingProblemFields (_results), getChangingSolutionFields (_results), _out);
+		toCSV (_results, _out, getChangingProblemFields (_results), getChangingSolutionFields (_results));
 	}
 
 }
