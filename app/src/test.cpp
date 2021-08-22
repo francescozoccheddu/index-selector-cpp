@@ -200,6 +200,76 @@ namespace IndexSelector::App
 		return fields;
 	}
 
+	EConfigFields getChangingConfigFields (ImmutableArray<Options> _configs)
+	{
+		EConfigFields fields{ configNoFields };
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.additionalCuts;
+		}) ? EConfigFields::additionalCuts : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.disableNonPrimalLP;
+		}) ? EConfigFields::disableNonPrimalLP : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.enableHeuristics;
+		}) ? EConfigFields::enableHeuristics : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.enableHeuristicSizeCutHeuristics;
+		}) ? EConfigFields::enableHeuristicSizeCutHeuristics : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.enableSelectionCuts;
+		}) ? EConfigFields::enableSelectionCuts : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.nMaxHeuristicSizeCutVars;
+		}) ? EConfigFields::nMaxHeuristicSizeCutVars : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.nMaxSizeCuts;
+		}) ? EConfigFields::nMaxSizeCuts : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.presolve;
+		}) ? EConfigFields::presolve : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.reduceVariables;
+		}) ? EConfigFields::reduceVariables : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.selectionCutManagement;
+		}) ? EConfigFields::selectionCutManagement : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.shareSelectionCutter;
+		}) ? EConfigFields::shareSelectionCutter : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.shareSizeCutter;
+		}) ? EConfigFields::shareSizeCutter : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.sizeCutManagement;
+		}) ? EConfigFields::sizeCutManagement : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.sizeCutMode;
+		}) ? EConfigFields::sizeCutMode : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.sizeCutTimeLimit;
+		}) ? EConfigFields::sizeCutTimeLimit : configNoFields;
+		fields |= isChanging (_configs, [] (const Options& _config)
+		{
+			return _config.timeLimit;
+		}) ? EConfigFields::timeLimit : configNoFields;
+		return fields;
+	}
+
 	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out, EProblemFields _problemFields, ESolutionFields _solutionFields)
 	{
 		const size_t nc{ _results.size () == 0 ? 0 : _results[0].configs.size () };
@@ -262,6 +332,115 @@ namespace IndexSelector::App
 	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out)
 	{
 		toCSV (_results, _out, getChangingProblemFields (_results), getChangingSolutionFields (_results));
+	}
+
+	void toCSV (ImmutableArray<Options> _configs, std::ostream& _out, EConfigFields _fields)
+	{
+		_out << "i";
+		if (has (_fields, EConfigFields::timeLimit)) _out << ",timeLimit";
+		if (has (_fields, EConfigFields::reduceVariables)) _out << ",reduceVariables";
+		if (has (_fields, EConfigFields::shareSelectionCutter)) _out << ",shareSelectionCutter";
+		if (has (_fields, EConfigFields::shareSizeCutter)) _out << ",shareSizeCutter";
+		if (has (_fields, EConfigFields::enableSelectionCuts)) _out << ",enableSelectionCuts";
+		if (has (_fields, EConfigFields::sizeCutMode)) _out << ",sizeCutMode";
+		if (has (_fields, EConfigFields::nMaxHeuristicSizeCutVars)) _out << ",nMaxHeuristicSizeCutVars";
+		if (has (_fields, EConfigFields::nMaxSizeCuts)) _out << ",nMaxSizeCuts";
+		if (has (_fields, EConfigFields::enableHeuristicSizeCutHeuristics)) _out << ",enableHeuristicSizeCutHeuristics";
+		if (has (_fields, EConfigFields::sizeCutTimeLimit)) _out << ",sizeCutTimeLimit";
+		if (has (_fields, EConfigFields::sizeCutManagement)) _out << ",sizeCutManagement";
+		if (has (_fields, EConfigFields::selectionCutManagement)) _out << ",selectionCutManagement";
+		if (has (_fields, EConfigFields::additionalCuts)) _out << ",additionalCuts";
+		if (has (_fields, EConfigFields::presolve)) _out << ",presolve";
+		if (has (_fields, EConfigFields::enableHeuristics)) _out << ",enableHeuristics";
+		if (has (_fields, EConfigFields::disableNonPrimalLP)) _out << ",disableNonPrimalLP";
+		_out << std::endl;
+		size_t i{};
+		for (const Options& config : _configs)
+		{
+			_out << i++;
+			if (has (_fields, EConfigFields::timeLimit)) _out << "," << config.timeLimit;
+			if (has (_fields, EConfigFields::reduceVariables)) _out << "," << config.reduceVariables;
+			if (has (_fields, EConfigFields::shareSelectionCutter)) _out << "," << config.shareSelectionCutter;
+			if (has (_fields, EConfigFields::shareSizeCutter)) _out << "," << config.shareSizeCutter;
+			if (has (_fields, EConfigFields::enableSelectionCuts)) _out << "," << config.enableSelectionCuts;
+			if (has (_fields, EConfigFields::sizeCutMode))
+			{
+				_out << ",";
+				switch (config.sizeCutMode)
+				{
+					case Options::ESizeCutMode::None:
+						_out << "None";
+						break;
+					case Options::ESizeCutMode::Heuristic:
+						_out << "Heuristic";
+						break;
+					case Options::ESizeCutMode::Optimal:
+						_out << "Optimal";
+						break;
+				}
+			}
+			if (has (_fields, EConfigFields::nMaxHeuristicSizeCutVars)) _out << "," << config.nMaxHeuristicSizeCutVars;
+			if (has (_fields, EConfigFields::nMaxSizeCuts)) _out << "," << config.nMaxSizeCuts;
+			if (has (_fields, EConfigFields::enableHeuristicSizeCutHeuristics)) _out << "," << config.enableHeuristicSizeCutHeuristics;
+			if (has (_fields, EConfigFields::sizeCutTimeLimit)) _out << "," << config.sizeCutTimeLimit;
+			if (has (_fields, EConfigFields::sizeCutManagement))
+			{
+				_out << ",";
+				switch (config.sizeCutManagement)
+				{
+					case Options::ECutManagement::CanFilter:
+						_out << "CanFilter";
+						break;
+					case Options::ECutManagement::CannotPurge:
+						_out << "CannotPurge";
+						break;
+					case Options::ECutManagement::CanPurgeLater:
+						_out << "CanPurgeLater";
+						break;
+				}
+			}
+			if (has (_fields, EConfigFields::selectionCutManagement))
+			{
+				_out << ",";
+				switch (config.selectionCutManagement)
+				{
+					case Options::ECutManagement::CanFilter:
+						_out << "CanFilter";
+						break;
+					case Options::ECutManagement::CannotPurge:
+						_out << "CannotPurge";
+						break;
+					case Options::ECutManagement::CanPurgeLater:
+						_out << "CanPurgeLater";
+						break;
+				}
+			}
+			if (has (_fields, EConfigFields::additionalCuts))
+			{
+				_out << ",";
+				switch (config.additionalCuts)
+				{
+					case Options::EAdditionalCuts::None:
+						_out << "None";
+						break;
+					case Options::EAdditionalCuts::GomoryOnly:
+						_out << "GomoryOnly";
+						break;
+					case Options::EAdditionalCuts::All:
+						_out << "All";
+						break;
+				}
+			}
+			if (has (_fields, EConfigFields::presolve)) _out << "," << config.presolve;
+			if (has (_fields, EConfigFields::enableHeuristics)) _out << "," << config.enableHeuristics;
+			if (has (_fields, EConfigFields::disableNonPrimalLP)) _out << "," << config.disableNonPrimalLP;
+			_out << std::endl;
+		}
+	}
+
+	void toCSV (ImmutableArray<Options> _configs, std::ostream& _out)
+	{
+		toCSV (_configs, _out, getChangingConfigFields (_configs));
 	}
 
 }

@@ -7,9 +7,51 @@
 #include <index-selector/solution.hpp>
 #include <ostream>
 #include <iostream>
+#include <type_traits>
 
 namespace IndexSelector::App
 {
+
+	template<typename TEnum, typename std::enable_if<std::is_enum<TEnum>::value>::type* = nullptr>
+	inline TEnum operator | (TEnum _lhs, TEnum _rhs)
+	{
+		using T = std::underlying_type_t <TEnum>;
+		return static_cast<TEnum>(static_cast<T>(_lhs) | static_cast<T>(_rhs));
+	}
+
+	template<typename TEnum, typename std::enable_if<std::is_enum<TEnum>::value>::type* = nullptr>
+	inline TEnum& operator |= (TEnum& _lhs, TEnum _rhs)
+	{
+		_lhs = _lhs | _rhs;
+		return _lhs;
+	}
+
+	template<typename TEnum, typename std::enable_if<std::is_enum<TEnum>::value>::type* = nullptr>
+	inline TEnum operator & (TEnum _lhs, TEnum _rhs)
+	{
+		using T = std::underlying_type_t <TEnum>;
+		return static_cast<TEnum>(static_cast<T>(_lhs) & static_cast<T>(_rhs));
+	}
+
+	template<typename TEnum, typename std::enable_if<std::is_enum<TEnum>::value>::type* = nullptr>
+	inline TEnum& operator &= (TEnum& _lhs, TEnum _rhs)
+	{
+		_lhs = _lhs & _rhs;
+		return _lhs;
+	}
+
+	template<typename TEnum, typename std::enable_if<std::is_enum<TEnum>::value>::type* = nullptr>
+	inline TEnum operator ~ (TEnum _x)
+	{
+		using T = std::underlying_type_t <TEnum>;
+		return static_cast<TEnum>(~static_cast<T>(_x));
+	}
+
+	template<typename TEnum, typename std::enable_if<std::is_enum<TEnum>::value>::type* = nullptr>
+	inline bool has (TEnum _src, TEnum _what)
+	{
+		return (_src & _what) == _what;
+	}
 
 	enum class EProblemFields
 	{
@@ -23,41 +65,6 @@ namespace IndexSelector::App
 		indexSizeDev = 1 << 7,
 		queryCostDev = 1 << 8,
 	};
-
-	inline EProblemFields operator | (EProblemFields _lhs, EProblemFields _rhs)
-	{
-		using T = std::underlying_type_t <EProblemFields>;
-		return static_cast<EProblemFields>(static_cast<T>(_lhs) | static_cast<T>(_rhs));
-	}
-
-	inline EProblemFields& operator |= (EProblemFields& _lhs, EProblemFields _rhs)
-	{
-		_lhs = _lhs | _rhs;
-		return _lhs;
-	}
-
-	inline EProblemFields operator & (EProblemFields _lhs, EProblemFields _rhs)
-	{
-		using T = std::underlying_type_t <EProblemFields>;
-		return static_cast<EProblemFields>(static_cast<T>(_lhs) & static_cast<T>(_rhs));
-	}
-
-	inline EProblemFields& operator &= (EProblemFields& _lhs, EProblemFields _rhs)
-	{
-		_lhs = _lhs & _rhs;
-		return _lhs;
-	}
-
-	inline EProblemFields operator ~ (EProblemFields _x)
-	{
-		using T = std::underlying_type_t <EProblemFields>;
-		return static_cast<EProblemFields>(~static_cast<T>(_x));
-	}
-
-	inline bool has (EProblemFields _src, EProblemFields _what)
-	{
-		return (_src & _what) == _what;
-	}
 
 	const EProblemFields problemNoFields{ 0 };
 	const EProblemFields problemSizeFields{ EProblemFields::nQueries | EProblemFields::nIndices };
@@ -78,41 +85,6 @@ namespace IndexSelector::App
 		succeeded = 1 << 8,
 	};
 
-	inline ESolutionFields operator | (ESolutionFields _lhs, ESolutionFields _rhs)
-	{
-		using T = std::underlying_type_t <ESolutionFields>;
-		return static_cast<ESolutionFields>(static_cast<T>(_lhs) | static_cast<T>(_rhs));
-	}
-
-	inline ESolutionFields& operator |= (ESolutionFields& _lhs, ESolutionFields _rhs)
-	{
-		_lhs = _lhs | _rhs;
-		return _lhs;
-	}
-
-	inline ESolutionFields operator & (ESolutionFields _lhs, ESolutionFields _rhs)
-	{
-		using T = std::underlying_type_t <ESolutionFields>;
-		return static_cast<ESolutionFields>(static_cast<T>(_lhs) & static_cast<T>(_rhs));
-	}
-
-	inline ESolutionFields& operator &= (ESolutionFields& _lhs, ESolutionFields _rhs)
-	{
-		_lhs = _lhs & _rhs;
-		return _lhs;
-	}
-
-	inline ESolutionFields operator ~ (ESolutionFields _x)
-	{
-		using T = std::underlying_type_t <ESolutionFields>;
-		return static_cast<ESolutionFields>(~static_cast<T>(_x));
-	}
-
-	inline bool has (ESolutionFields _src, ESolutionFields _what)
-	{
-		return (_src & _what) == _what;
-	}
-
 	const ESolutionFields solutionNoFields{ 0 };
 	const ESolutionFields solutionSizeFields{ ESolutionFields::nNodes | ESolutionFields::totalElapsedTime };
 	const ESolutionFields solutionModelFields{ ESolutionFields::nConstraints | ESolutionFields::nVariables };
@@ -123,6 +95,33 @@ namespace IndexSelector::App
 	const ESolutionFields solutionCutCountFields{ ESolutionFields::nSelectionCuts | ESolutionFields::nSizeCuts };
 	const ESolutionFields solutionCutFields{ solutionSelectionCutFields | solutionSizeCutFields };
 	const ESolutionFields solutionAllFields{ solutionSizeFields | solutionModelFields | solutionCutFields | ESolutionFields::succeeded };
+
+	enum class EConfigFields
+	{
+		timeLimit = 1 << 0,
+		reduceVariables = 1 << 1,
+		shareSelectionCutter = 1 << 2,
+		shareSizeCutter = 1 << 3,
+		enableSelectionCuts = 1 << 4,
+		sizeCutMode = 1 << 5,
+		nMaxHeuristicSizeCutVars = 1 << 6,
+		sizeCutTimeLimit = 1 << 7,
+		nMaxSizeCuts = 1 << 8,
+		enableHeuristicSizeCutHeuristics = 1 << 9,
+		sizeCutManagement = 1 << 10,
+		selectionCutManagement = 1 << 11,
+		additionalCuts = 1 << 12,
+		presolve = 1 << 13,
+		enableHeuristics = 1 << 14,
+		disableNonPrimalLP = 1 << 15,
+	};
+
+	const EConfigFields configNoFields{ 0 };
+	const EConfigFields configSelectionCutFields{ EConfigFields::selectionCutManagement | EConfigFields::shareSelectionCutter | EConfigFields::enableSelectionCuts };
+	const EConfigFields configSizeCutFields{ EConfigFields::sizeCutManagement | EConfigFields::sizeCutTimeLimit | EConfigFields::sizeCutMode | EConfigFields::shareSizeCutter  };
+	const EConfigFields configHeuristicSizeCutFields{ EConfigFields::enableHeuristicSizeCutHeuristics | EConfigFields::nMaxHeuristicSizeCutVars | EConfigFields::nMaxSizeCuts  };
+	const EConfigFields configMIPFields{ EConfigFields::presolve | EConfigFields::enableHeuristics | EConfigFields::disableNonPrimalLP | EConfigFields::additionalCuts | EConfigFields::timeLimit | EConfigFields::reduceVariables };
+	const EConfigFields configAllFields{ configMIPFields | configSelectionCutFields | configSizeCutFields | configHeuristicSizeCutFields };
 
 	struct ConfigResult final
 	{
@@ -143,10 +142,15 @@ namespace IndexSelector::App
 	EProblemFields getChangingProblemFields (ImmutableArray<ProblemResult> _results);
 	ESolutionFields getChangingSolutionFields (ImmutableArray<ConfigResult> _results);
 	ESolutionFields getChangingSolutionFields (ImmutableArray<ProblemResult> _results);
+	EConfigFields getChangingConfigFields (ImmutableArray<Options> _configs);
 
 	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out, EProblemFields _problemFields, ESolutionFields _solutionFields);
 
 	void toCSV (ImmutableArray<ProblemResult> _results, std::ostream& _out);
+
+	void toCSV (ImmutableArray<Options> _configs, std::ostream& _out, EConfigFields _configFields);
+
+	void toCSV (ImmutableArray<Options> _configs, std::ostream& _out);
 
 }
 
