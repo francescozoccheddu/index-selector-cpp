@@ -45,21 +45,17 @@ namespace IndexSelector
 				std::forward_list<IloBoolVar>::iterator xoit = si.xs.before_begin (), xit = std::next (xoit);
 				while (xit != si.xs.end ())
 				{
-					bool gone{ false };
 					if (_callback.getValue (*xit) > vy)
 					{
-						_callback.add (*xit - si.y <= 0, IloCplex::CutManagement::UseCutForce);
-						gone = manager.options.selectionCutManagement == Options::ECutManagement::CannotPurge;
+						_callback.add (*xit - si.y <= 0, manager.options.selectionCutManagement);
+						if (manager.options.selectionCutManagement == Options::ECutManagement::CannotPurge)
+						{
+							xit = si.xs.erase_after (xoit);
+							continue;
+						}
 					}
-					if (gone)
-					{
-						xit = si.xs.erase_after (xoit);
-					}
-					else
-					{
-						useful = true;
-						xoit = xit++;
-					}
+					useful = true;
+					xoit = xit++;
 				}
 			}
 			if (!useful)

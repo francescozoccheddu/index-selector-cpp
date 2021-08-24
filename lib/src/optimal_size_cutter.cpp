@@ -70,20 +70,7 @@ namespace IndexSelector
 					ai++;
 				}
 			}
-			IloCplex::CutManagement management;
-			switch (manager.options.sizeCutManagement)
-			{
-				case Options::ECutManagement::CannotPurge:
-					management = IloCplex::CutManagement::UseCutForce;
-					break;
-				case Options::ECutManagement::CanPurgeLater:
-					management = IloCplex::CutManagement::UseCutPurge;
-					break;
-				case Options::ECutManagement::CanFilter:
-					management = IloCplex::CutManagement::UseCutFilter;
-					break;
-			}
-			_callback.add (sum <= count - 1, management);
+			_callback.add (sum <= count - 1, manager.options.sizeCutManagement);
 			sum.end ();
 		}
 		_callback.unlockIfShared ();

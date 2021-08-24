@@ -16,7 +16,7 @@ namespace IndexSelector
 
 		enum class ECutManagement
 		{
-			CannotPurge, CanPurgeLater, CanFilter
+			CannotPurge, CanPurgeLater, CanFilter, Local
 		};
 
 		enum class EAdditionalCuts

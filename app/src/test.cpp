@@ -397,6 +397,9 @@ namespace IndexSelector::App
 					case Options::ECutManagement::CanPurgeLater:
 						_out << "CanPurgeLater";
 						break;
+					case Options::ECutManagement::Local:
+						_out << "Local";
+						break;
 				}
 			}
 			if (has (_fields, EConfigFields::selectionCutManagement))
@@ -412,6 +415,9 @@ namespace IndexSelector::App
 						break;
 					case Options::ECutManagement::CanPurgeLater:
 						_out << "CanPurgeLater";
+						break;
+					case Options::ECutManagement::Local:
+						_out << "Local";
 						break;
 				}
 			}

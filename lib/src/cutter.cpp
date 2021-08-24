@@ -40,16 +40,24 @@ namespace IndexSelector
 		return static_cast<Real>(IloCplex::UserCutCallbackI::getValue (_var));
 	}
 
-	IloConstraint Cutter::Callback::add (IloConstraint _constraint, IloCplex::CutManagement _management)
+	void Cutter::Callback::add (IloConstraint _constraint, Options::ECutManagement _management)
 	{
+		switch (_management)
+		{
+			case Options::ECutManagement::CannotPurge:
+				IloCplex::UserCutCallbackI::add (_constraint, IloCplex::CutManagement::UseCutForce);
+				break;
+			case Options::ECutManagement::CanPurgeLater:
+				IloCplex::UserCutCallbackI::add (_constraint, IloCplex::CutManagement::UseCutPurge);
+				break;
+			case Options::ECutManagement::CanFilter:
+				IloCplex::UserCutCallbackI::add (_constraint, IloCplex::CutManagement::UseCutFilter);
+				break;
+			case Options::ECutManagement::Local:
+				IloCplex::UserCutCallbackI::addLocal (_constraint);
+				break;
+		}
 		m_cutter.manager.addCut ();
-		return IloCplex::UserCutCallbackI::add (_constraint, _management);
-	}
-
-	IloConstraint Cutter::Callback::addLocal (IloConstraint _constraint)
-	{
-		m_cutter.manager.addCut ();
-		return IloCplex::UserCutCallbackI::addLocal (_constraint);
 	}
 
 	void Cutter::Callback::lock ()

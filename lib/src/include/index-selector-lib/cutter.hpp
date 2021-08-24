@@ -40,8 +40,7 @@ namespace IndexSelector
 		public:
 
 			Real getValue (IloBoolVar _var);
-			IloConstraint add (IloConstraint _constraint, IloCplex::CutManagement _management = IloCplex::CutManagement::UseCutForce);
-			IloConstraint addLocal (IloConstraint _constraint);
+			void add (IloConstraint _constraint, Options::ECutManagement _management);
 			void lock ();
 			void lockIfShared ();
 			void unlock ();
